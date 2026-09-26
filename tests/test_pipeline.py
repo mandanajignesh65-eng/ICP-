@@ -109,3 +109,16 @@ def test_business_answers_find_planted_patterns(sig):
     assert src.loc["Referral", "verdict"] == "Focus"
     concl = IN.conclusions(answers, sig["base_rate"], lambda x: f"{x:.0f}")
     assert concl["focus"] and concl["avoid"]
+
+
+def test_export_package(db, tmp_path):
+    import zipfile
+    from icp_analyzer.export import export
+    s = Store(db, read_only=True)
+    z = export(s, tmp_path, log=lambda *_: None)
+    s.close()
+    names = zipfile.ZipFile(z).namelist()
+    assert any(n.endswith(".xlsx") for n in names)
+    assert any("raw_data/Deals.csv" in n for n in names) and any("cleaned_data/deals.csv" in n for n in names)
+    xl = pd.ExcelFile(next(tmp_path.glob("*/*.xlsx")))
+    assert {"Read me", "Summary", "Best customers", "Open deals", "Won deals"} <= set(xl.sheet_names)

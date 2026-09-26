@@ -6,8 +6,10 @@
   python cli.py exchange-code CODE   # turn a Self Client grant code into a refresh token (saved to .env)
   python cli.py check                # test the Zoho connection
   python cli.py extract [--notes] [--stage-history]
+  python cli.py extras [--files]     # visits, automation log, attachments, deal emails (+ attached files)
   python cli.py prepare              # clean + model the data
   python cli.py dashboard            # open the visual dashboard
+  python cli.py export               # Excel analysis + all data as CSV, zipped into exports/ (for sharing)
   python cli.py all                  # extract + prepare
 """
 from __future__ import annotations
@@ -126,10 +128,25 @@ def cmd_extract(args):
     store.close()
 
 
+def cmd_extras(args):
+    from icp_analyzer.zoho.extras import extract_extras
+    c, store = _client(), Store(args.db)
+    print("Extracting data Bulk Read can't export (visits, automation log, attachments, deal emails)...")
+    extract_extras(c, store, emails=not args.no_emails, files=args.files, files_dir=ROOT / "data" / "attachments")
+    store.close()
+
+
 def cmd_prepare(args):
     from icp_analyzer.prepare import prepare
     store = Store(args.db)
     prepare(store)
+    store.close()
+
+
+def cmd_export(args):
+    from icp_analyzer.export import export
+    store = Store(args.db, read_only=True)
+    export(store, ROOT / "exports")
     store.close()
 
 
@@ -156,7 +173,12 @@ def main():
         x.add_argument("--history-only", action="store_true", help="Only fetch missing/open deal stage history")
         x.set_defaults(fn=fn or (lambda a: (cmd_extract(a), cmd_prepare(a))))
     sub.add_parser("prepare").set_defaults(fn=cmd_prepare)
+    x = sub.add_parser("extras", help="Visits, automation log, attachment list, deal emails (+ files with --files)")
+    x.add_argument("--no-emails", action="store_true", help="Skip emails on deals (1 API call per deal)")
+    x.add_argument("--files", action="store_true", help="Also download every attached file into data/attachments/")
+    x.set_defaults(fn=cmd_extras)
     sub.add_parser("dashboard").set_defaults(fn=cmd_dashboard)
+    sub.add_parser("export", help="Excel analysis + all raw and cleaned data as CSV, zipped (exports/)").set_defaults(fn=cmd_export)
     args = p.parse_args()
     from icp_analyzer.zoho.client import ZohoError
     try:

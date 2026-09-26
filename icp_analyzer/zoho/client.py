@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import threading
 import time
 import zipfile
 
@@ -44,29 +45,71 @@ class ZohoClient:
         self.session = requests.Session()
         self._token: str | None = None
         self._token_expiry = 0.0
+        self._lock = threading.Lock()  # parallel downloads share one token; refresh it only once at a time
         self.api_domain = settings.api_domain
 
     # ---------- auth ----------
     def _access_token(self) -> str:
         if self._token and time.time() < self._token_expiry - 60:
             return self._token
-        r = self.session.post(
-            f"{self.s.accounts_url}/oauth/v2/token",
-            params={
-                "refresh_token": self.s.refresh_token,
-                "client_id": self.s.client_id,
-                "client_secret": self.s.client_secret,
-                "grant_type": "refresh_token",
-            },
-            timeout=30,
-        )
-        data = r.json()
-        if "access_token" not in data:
-            raise auth_error(str(data.get("error", data)), "Could not log in to Zoho")
-        self._token = data["access_token"]
-        self._token_expiry = time.time() + int(data.get("expires_in", 3600))
-        self.api_domain = data.get("api_domain", self.api_domain)
-        return self._token
+        with self._lock:
+            if self._token and time.time() < self._token_expiry - 60:
+                return self._token
+            return self._refresh_token()
+
+    def _refresh_token(self) -> str:
+        """Get an access token: reuse the cached one if still valid, else ask Zoho. Zoho only allows a few token
+        requests per few minutes and answers 'Access Denied' beyond that, so we cache and back off instead of failing."""
+        cached = self._read_cache()
+        if cached:
+            return cached
+        for attempt in range(8):
+            r = self.session.post(
+                f"{self.s.accounts_url}/oauth/v2/token",
+                params={"refresh_token": self.s.refresh_token, "client_id": self.s.client_id,
+                        "client_secret": self.s.client_secret, "grant_type": "refresh_token"},
+                timeout=30,
+            )
+            data = r.json()
+            if "access_token" in data:
+                self._token = data["access_token"]
+                self._token_expiry = time.time() + int(data.get("expires_in", 3600))
+                self.api_domain = data.get("api_domain", self.api_domain)
+                self._write_cache()
+                return self._token
+            err = str(data.get("error", data))
+            if "access denied" in err.lower() or "too many" in str(data).lower():
+                wait = 60 * (attempt + 1)
+                self.log(f"  Zoho is throttling logins; waiting {wait}s before retrying...")
+                time.sleep(wait)
+                continue
+            raise auth_error(err, "Could not log in to Zoho")
+        raise ZohoError("Zoho kept refusing new logins (too many token requests). Wait 15 minutes and re-run.")
+
+    def _cache_path(self):
+        from pathlib import Path
+        return Path(self.s.db_path).parent / ".zoho_token_cache.json"
+
+    def _read_cache(self) -> str | None:
+        import json as _json
+        try:
+            d = _json.loads(self._cache_path().read_text())
+            if d.get("client_id") == self.s.client_id and time.time() < d["expiry"] - 120:
+                self._token, self._token_expiry, self.api_domain = d["token"], d["expiry"], d.get("api_domain", self.api_domain)
+                return self._token
+        except Exception:
+            pass
+        return None
+
+    def _write_cache(self) -> None:
+        import json as _json
+        try:
+            p = self._cache_path()
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(_json.dumps({"token": self._token, "expiry": self._token_expiry,
+                                      "api_domain": self.api_domain, "client_id": self.s.client_id}))
+        except Exception:
+            pass
 
     # ---------- low level ----------
     def _request(self, method: str, path: str, *, params=None, json=None, raw=False, retries=5):
@@ -77,8 +120,15 @@ class ZohoClient:
             if r.status_code == 401 and "OAUTH_SCOPE_MISMATCH" in r.text:
                 raise ZohoError(f"{method} {path}: the Zoho code was generated without a scope this step needs. "
                                 "Run  python cli.py connect  and generate the code with all 5 scopes it shows.")
-            if r.status_code == 401 and attempt == 0:
-                self._token = None  # expired token: refresh once
+            if r.status_code == 401 and attempt < 2:  # token expired: refresh once, shared by all threads
+                used = headers["Authorization"].split()[-1]
+                with self._lock:
+                    if self._token == used:
+                        self._token, self._token_expiry = None, 0.0
+                        try:
+                            self._cache_path().unlink()
+                        except OSError:
+                            pass
                 continue
             if r.status_code in (429, 500, 502, 503, 504):
                 wait = min(60, 2 ** attempt * 2)
@@ -138,6 +188,35 @@ class ZohoClient:
             token = info.get("next_page_token")
             page += 1
         return pd.json_normalize(rows, sep=".") if rows else pd.DataFrame()
+
+    def records_all_fields(self, module: str, **extra) -> pd.DataFrame:
+        """Every field of a module via REST (50 fields per request, merged on id) — for modules Bulk Read can't export."""
+        names = [f["api_name"] for f in self.fields(module) if f.get("api_name")]
+        frames = []
+        for i in range(0, max(len(names), 1), 49):
+            chunk = self.records(module, names[i:i + 49] or ["id"], **extra)
+            if not chunk.empty:
+                frames.append(chunk.set_index("id"))
+        if not frames:
+            return pd.DataFrame()
+        out = frames[0]
+        for f in frames[1:]:
+            out = out.join(f[[c for c in f.columns if c not in out.columns]], how="outer")
+        return out.reset_index()
+
+    def emails(self, module: str, record_id: str) -> list[dict]:
+        rows, index = [], None
+        while True:
+            params = {"index": index} if index else {}
+            data = self.get(f"/{module}/{record_id}/Emails", **params) or {}
+            rows += data.get("Emails", []) or data.get("email_related_list", [])
+            info = data.get("info", {})
+            if not info.get("more_records") or not info.get("next_index"):
+                return rows
+            index = info["next_index"]
+
+    def download_attachment(self, module: str, record_id: str, attachment_id: str) -> bytes:
+        return self._request("GET", f"/crm/{API_VERSION}/{module}/{record_id}/Attachments/{attachment_id}", raw=True)
 
     def related(self, module: str, record_id: str, related: str, fields: list[str]) -> list[dict]:
         data = self.get(f"/{module}/{record_id}/{related}", fields=",".join(fields), per_page=200) or {}
