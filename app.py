@@ -93,10 +93,11 @@ with head_r:
         pipes = sorted(deals_all["Pipeline"].dropna().unique()) if "Pipeline" in deals_all else []
         sel_pipes = st.multiselect("Pipeline", pipes, placeholder="All pipelines") if len(pipes) > 1 else []
         type_c = "Type" if "Type" in deals_all else None
-        has_new = bool(type_c) and deals_all[type_c].astype(str).str.contains("new", case=False).any()
+        EXISTING_RX = r"exist|upsell|up-sell|renew|expan|cross|add-on|addon"
+        has_new = bool(type_c) and deals_all[type_c].astype(str).str.contains(EXISTING_RX, case=False).any()
         new_only = st.toggle("New customers only", value=has_new, disabled=not has_new,
-                             help="On: only deals to win NEW customers — what an ICP is about. Deals with existing clients "
-                                  "(upsell/renewal) win far more often and would inflate every number.")
+                             help="On: leaves out deals marked as existing clients (upsell/renewal/expansion), which win far "
+                                  "more often and would inflate every number. Deals with no type recorded are kept.")
         stages = sorted(deals_all["Stage"].dropna().unique()) if "Stage" in deals_all else []
         junkish = [s for s in stages if any(w in s.lower() for w in ("junk", "spam", "duplicate", "test"))]
         skip_stages = st.multiselect("Leave out stages", stages, default=junkish,
@@ -114,8 +115,8 @@ if sel_pipes:
     mask &= deals_all["Pipeline"].isin(sel_pipes)
 if skip_stages:
     mask &= ~deals_all["Stage"].isin(skip_stages)
-if new_only:
-    mask &= deals_all["Type"].astype(str).str.contains("new", case=False)
+if new_only:  # drop only deals clearly marked as existing-client business; keep blank types
+    mask &= ~deals_all["Type"].fillna("").astype(str).str.contains(EXISTING_RX, case=False)
 deals = deals_all[mask]
 wide = D["deal_wide"][D["deal_wide"]["deal_id"].isin(deals["Id"])]
 sig = run_scan(wide, D["feature_catalog"], min_n)
@@ -126,7 +127,7 @@ usable = fields[fields["strength"] != "Leakage suspected"] if not fields.empty e
 
 with head_l:
     st.markdown(f"<div class='hero-title'>{org.get('company_name', 'CRM')}</div>"
-                f"<div class='hero-sub'>{sig['closed']:,} closed deals{' to new customers' if new_only else ''} · "
+                f"<div class='hero-sub'>{sig['closed']:,} closed deals{' (existing-client deals excluded)' if new_only else ''} · "
                 f"average win rate {pct(base)}</div>",
                 unsafe_allow_html=True)
 
