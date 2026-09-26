@@ -1,0 +1,28 @@
+# Secrets — never commit (this repo is public)
+.env
+.env.*
+!.env.example
+*token*.json
+
+# Client CRM data — never commit
+data/
+exports/
+reports/
+*.duckdb
+*.duckdb.wal
+*.csv
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
