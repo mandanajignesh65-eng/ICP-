@@ -321,6 +321,13 @@ def prepare(store: Store, log=print) -> None:
     deals["age_days"] = (pd.Timestamp.now() - deals["created"]).dt.days
     if amount_c:
         deals = deals.rename(columns={amount_c: "amount"})
+        # Multi-currency CRMs store Amount in each deal's own currency; Zoho's Exchange_Rate is units per 1 home-currency
+        # unit, so home amount = amount / rate. Without this, a $1,000 deal would count as 1,000 rupees.
+        rate_c = col(deals, "Exchange_Rate")
+        if rate_c:
+            rate = pd.to_numeric(deals[rate_c], errors="coerce")
+            deals["amount_original"] = deals["amount"]
+            deals["amount"] = np.where(rate > 0, deals["amount"] / rate, deals["amount"])
     else:
         deals["amount"] = np.nan
     deals["amount_band"] = nice_quartile_bands(deals["amount"])
@@ -384,7 +391,7 @@ def prepare(store: Store, log=print) -> None:
         catalog.append({"feature": name, "source": source, "kind": kind, "label": label, "custom": custom,
                         "module": module, "field": field})
 
-    skip_deal = {"Id", stage_c, "outcome", "is_won", "created", "closed_on", "amount", "cycle_days", "Owner",
+    skip_deal = {"Id", stage_c, "outcome", "is_won", "created", "closed_on", "amount", "amount_original", "cycle_days", "Owner",
                  "Probability", "Expected_Revenue", "Deal_Name", "Modified_Time", "Last_Activity_Time"}
     derived = {"amount_band", "created_quarter", "created_month", "age_days", "n_calls", "n_meetings", "n_tasks",
                "n_activities", "days_to_first_activity", "activities_per_week", "last_open_stage"}
@@ -404,7 +411,7 @@ def prepare(store: Store, log=print) -> None:
     if acc_c and not acc.empty:
         acc_idx = acc.set_index("Id")
         emp_raw = col(acc, "Employees", "No_of_Employees")
-        skip_acc = {"Id", "name_key", "is_duplicate", "Owner", "Owner_Name", emp_raw, "domain"}  # raw headcount duplicates the size band
+        skip_acc = {"Id", "name_key", "is_duplicate", "Owner", "Owner_Name", emp_raw, "domain", "Currency"}  # raw headcount duplicates the size band
         nice = {"employee_band": "Company size", "domain": "Domain"}
         for c in acc.columns:
             if c in skip_acc or c.endswith("_Time") or SKIP_RX.search(c):

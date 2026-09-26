@@ -71,7 +71,9 @@ stage_order = (D["meta_picklist"].query("module == 'Deals' and field == 'Stage'"
 def money(x) -> str:
     if pd.isna(x):
         return "—"
-    sym = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£"}.get(currency, currency + " " if currency else "")
+    symbols = {"INR": "₹", "Indian Rupee": "₹", "USD": "$", "US Dollar": "$", "EUR": "€", "Euro": "€",
+               "GBP": "£", "Pound Sterling": "£", "AED": "AED ", "UAE Dirham": "AED ", "SGD": "S$", "Singapore Dollar": "S$"}
+    sym = symbols.get(currency, (currency + " ") if currency and len(currency) <= 4 else "")
     for div, suf in ((1e7, " Cr"), (1e5, " L"), (1e3, "K")):
         if abs(x) >= div:
             return f"{sym}{x / div:,.1f}{suf}"
