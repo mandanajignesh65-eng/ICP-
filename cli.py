@@ -94,7 +94,7 @@ def cmd_prepare(args):
 
 
 def cmd_dashboard(args):
-    subprocess.run([sys.executable, "-m", "streamlit", "run", str(ROOT / "app.py"), "--", "--db", str(args.db)])
+    subprocess.run([sys.executable, "-m", "streamlit", "run", str(ROOT / "app.py"), "--", "--db", str(Path(args.db).resolve())], cwd=ROOT)
 
 
 def main():

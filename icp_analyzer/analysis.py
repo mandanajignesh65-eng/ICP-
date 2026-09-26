@@ -256,16 +256,24 @@ def pct(x) -> str:
     return "—" if pd.isna(x) else f"{x:.0%}"
 
 
-def findings(sig: dict, sources=("Account", "Contact", "Deal"), limit: int = 8, min_conf=("High", "Medium")) -> list[str]:
-    """Top plain-English findings from the signal scan (non-leaky, confident, biggest gap first). Returns HTML."""
+def top_moves(sig: dict, sources=("Account", "Contact", "Deal"), limit: int = 10, per_field: int = 2,
+              min_conf=("High", "Medium")) -> pd.DataFrame:
+    """Values that move the win rate most (non-leaky fields, confident, biggest gap from average first)."""
     f, v, base = sig["fields"], sig["values"], sig["base_rate"]
     if f.empty or v.empty:
-        return []
+        return pd.DataFrame()
     good = f[f["strength"].isin(["Strong", "Moderate", "Weak"]) & f["source"].isin(sources)]["feature"]
-    rows = v[v["feature"].isin(good) & v["confidence"].isin(min_conf)
+    rows = v[v["feature"].isin(good) & v["confidence"].isin(min_conf) & v["direction"].isin(["Better", "Worse"])
              & ~v["value"].isin(["(blank)", "Other (rare values)", "Filled"])].copy()
     rows["gap"] = (rows["rate"] - base).abs()
-    rows = rows.sort_values("gap", ascending=False).drop_duplicates("feature").head(limit)
+    rows = rows.sort_values("gap", ascending=False).groupby("feature").head(per_field)
+    return rows.head(limit)
+
+
+def findings(sig: dict, sources=("Account", "Contact", "Deal"), limit: int = 8, min_conf=("High", "Medium")) -> list[str]:
+    """Top plain-English findings (HTML), one per field."""
+    base = sig["base_rate"]
+    rows = top_moves(sig, sources, limit, per_field=1, min_conf=min_conf)
     out = []
     for r in rows.itertuples():
         up = r.rate > base

@@ -92,4 +92,7 @@ def test_dashboard_renders_without_errors(db, monkeypatch):
     at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
     at.run()
     assert not at.exception, [e.message for e in at.exception]
-    assert len(at.tabs) == 11
+    for section in ["Signals", "Segments", "Revenue", "Pipeline", "Leads", "Buyers", "Sales motion", "Data quality"]:
+        at.session_state["section"] = section
+        at.run()
+        assert not at.exception, (section, [e.message for e in at.exception])

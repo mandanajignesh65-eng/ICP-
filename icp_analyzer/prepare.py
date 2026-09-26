@@ -370,13 +370,16 @@ def prepare(store: Store, log=print) -> None:
     acc_c = col(deals, "Account_Name")
     if acc_c and not acc.empty:
         acc_idx = acc.set_index("Id")
+        emp_raw = col(acc, "Employees", "No_of_Employees")
+        skip_acc = {"Id", "name_key", "is_duplicate", "Owner", "Owner_Name", emp_raw}  # raw headcount duplicates the size band
+        nice = {"employee_band": "Company size", "domain": "Domain"}
         for c in acc.columns:
-            if c in ("Id", "name_key", "is_duplicate", "Owner", "Owner_Name") or c.endswith("_Time"):
+            if c in skip_acc or c.endswith("_Time"):
                 continue
             k = acc_kinds.get(c, "text")
             if k in ("category", "numeric", "text"):
-                add(f"account.{c}", deals[acc_c].map(acc_idx[c]), "Account", k,
-                    "Account · " + cl.labels.get(("Accounts", c), c).replace("_", " "),
+                label = nice.get(c) or cl.labels.get(("Accounts", c), c).replace("_", " ")
+                add(f"account.{c}", deals[acc_c].map(acc_idx[c]), "Account", k, "Account · " + label,
                     cl.custom.get(("Accounts", c), False), "Accounts", c)
 
     ct_c = col(deals, "Contact_Name")
