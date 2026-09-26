@@ -86,7 +86,7 @@ def select_modules(mod_df: pd.DataFrame) -> list[str]:
 
 
 def extract(client: ZohoClient, store: Store, modules: list[str] | None = None,
-            notes: bool = False, stage_history: bool = False, max_history: int = 3000, log=print) -> None:
+            notes: bool = False, stage_history: bool = False, max_history: int | None = None, bulk: bool = True, log=print) -> None:
     mod_df = store.read("meta_modules")
     if mod_df.empty:
         discover(client, store, log)
@@ -94,14 +94,14 @@ def extract(client: ZohoClient, store: Store, modules: list[str] | None = None,
     targets = modules or mod_df[mod_df["selected"]]["api_name"].tolist()
 
     log_rows = []
-    for name in targets:
+    for name in (targets if bulk else []):
         t0 = time.time()
         try:
             df = client.bulk_read(name)
             store.write(f"raw_{name}", df)
             log(f"  {name}: {len(df):,} records, {df.shape[1]} fields ({time.time() - t0:.0f}s)")
             log_rows.append({"module": name, "rows": len(df), "columns": df.shape[1], "method": "bulk", "error": None})
-        except ZohoError as e:
+        except Exception as e:  # one module failing must not stop the rest of the extraction
             log(f"  ! {name} failed: {e}")
             log_rows.append({"module": name, "rows": 0, "columns": 0, "method": "bulk", "error": str(e)[:300]})
 
@@ -115,26 +115,56 @@ def extract(client: ZohoClient, store: Store, modules: list[str] | None = None,
             log(f"  ! Notes failed: {e}")
 
     if stage_history and store.has("raw_Deals"):
-        deals = store.read("raw_Deals")
-        ids = deals["Id"].dropna().astype(str).tolist()[:max_history]
-        log(f"  Stage history for {len(ids):,} deals (1 API call each)...")
-        rows = []
-        for i, deal_id in enumerate(ids, 1):
-            try:
-                for h in client.related("Deals", deal_id, "Stage_History", STAGE_HISTORY_FIELDS):
-                    h = {k: (json.dumps(v) if isinstance(v, (dict, list)) else v) for k, v in h.items()}
-                    rows.append({"deal_id": deal_id, **h})
-            except ZohoError as e:
-                log(f"  ! stage history stopped at deal {i}: {e}")
-                break
-            if i % 250 == 0:
-                log(f"    {i:,}/{len(ids):,}")
-        store.write("raw_Stage_History", pd.DataFrame(rows).astype(str) if rows else pd.DataFrame())
-        log_rows.append({"module": "Stage_History", "rows": len(rows), "columns": 0, "method": "rest", "error": None})
+        log_rows.append(_stage_history(client, store, max_history, log))
 
     log_df = pd.DataFrame(log_rows)
     log_df["extracted_at"] = datetime.now(timezone.utc).isoformat()
     store.write("meta_extract_log", log_df)
+
+
+def _stage_history(client: ZohoClient, store: Store, max_history: int | None, log) -> dict:
+    """Fetch deal stage history incrementally: closed deals already fetched are skipped; open deals are refreshed.
+    Progress is saved every 500 deals, so an interrupted run resumes where it stopped."""
+    deals = store.read("raw_Deals")
+    existing = store.read("raw_Stage_History")
+    checked = store.read("meta_stage_history_checked")
+    done = set(checked["deal_id"].astype(str)) if not checked.empty else set()
+    if not done and not existing.empty:  # history fetched before this tracker existed
+        done = set(existing["deal_id"].astype(str))
+    stage = deals["Stage"].fillna("").astype(str) if "Stage" in deals else pd.Series("", index=deals.index)
+    pick = store.read("meta_picklist")
+    closed_stages = set()
+    if not pick.empty:  # Zoho's own forecast type says which stages are closed
+        st = pick[(pick["module"] == "Deals") & (pick["field"] == "Stage")]
+        closed_stages = set(st[st["forecast_type"].fillna("").str.lower().str.contains("closed")]["display_value"])
+    is_closed = stage.isin(closed_stages) | stage.str.lower().str.contains("closed|won|lost")
+    ids = deals["Id"].dropna().astype(str)
+    todo = [d for d, closed in zip(ids, is_closed) if not (closed and d in done)]
+    if max_history:
+        todo = todo[:max_history]
+    keep = existing[~existing["deal_id"].astype(str).isin(todo)] if not existing.empty else pd.DataFrame()
+    log(f"  Stage history: {len(todo):,} deals to fetch ({len(ids) - len(todo):,} already up to date), 1 API call each...")
+    rows, fetched = [], []
+
+    def save():
+        new = pd.DataFrame(rows).astype(str) if rows else pd.DataFrame()
+        store.write("raw_Stage_History", pd.concat([keep, new], ignore_index=True) if len(keep) or len(new) else pd.DataFrame())
+        store.write("meta_stage_history_checked", pd.DataFrame({"deal_id": sorted(done | set(fetched))}))
+
+    for i, deal_id in enumerate(todo, 1):
+        try:
+            for h in client.related("Deals", deal_id, "Stage_History", STAGE_HISTORY_FIELDS):
+                h = {k: (json.dumps(v) if isinstance(v, (dict, list)) else v) for k, v in h.items()}
+                rows.append({"deal_id": deal_id, **h})
+            fetched.append(deal_id)
+        except ZohoError as e:
+            log(f"  ! stage history stopped at deal {i}: {e}. Re-run to resume.")
+            break
+        if i % 500 == 0:
+            save()
+            log(f"    {i:,}/{len(todo):,}")
+    save()
+    return {"module": "Stage_History", "rows": len(rows), "columns": 0, "method": "rest", "error": None}
 
 
 def _name(v):

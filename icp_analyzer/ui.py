@@ -28,7 +28,8 @@ MUTED = "#D2D2D7"
 FONT = "Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
 
 DIRECTION = {"Better": GREEN, "Worse": RED, "Not different": MUTED, "Too few": "#E5E5EA"}
-SOURCE = {"Account": BLUE, "Contact": INDIGO, "Deal": TEAL, "Activity": "#AEAEB2"}
+SOURCE = {"Account": BLUE, "Contact": INDIGO, "Deal": TEAL, "Activity": "#AEAEB2", "Process": "#C7C7CC",
+          "Team": ORANGE, "Time": "#D1D1D6"}
 STRENGTH = {"Strong": BLUE, "Moderate": "#5AA2F0", "Weak": "#B7D4F7", "No clear signal": "#E5E5EA"}
 DIVERGING = [[0, "#FF3B30"], [0.35, "#FFB3AE"], [0.5, "#F2F2F7"], [0.65, "#A8E6B8"], [1, "#248A3D"]]
 

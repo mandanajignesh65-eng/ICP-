@@ -146,14 +146,21 @@ class ZohoClient:
     # ---------- Bulk Read ----------
     def bulk_read(self, module: str, poll_seconds: int = 5, timeout_minutes: int = 60) -> pd.DataFrame:
         """Export every record and every field of a module. Handles >200k records via paging."""
-        frames, page, page_token = [], 1, None
+        frames, page, page_token, use_token = [], 1, None, False
         while True:
             query: dict = {"module": {"api_name": module}}
-            if page_token:
+            # Zoho rejects sending page and page_token together; ask by page number first, token as fallback.
+            if use_token and page_token:
                 query["page_token"] = page_token
             else:
                 query["page"] = page
-            job = self._request("POST", f"/crm/bulk/{API_VERSION}/read", json={"query": query})
+            try:
+                job = self._request("POST", f"/crm/bulk/{API_VERSION}/read", json={"query": query})
+            except ZohoError:
+                if page > 1 and page_token and not use_token:
+                    use_token = True
+                    continue
+                raise
             job_id = job["data"][0]["details"]["id"]
             deadline = time.time() + timeout_minutes * 60
             while True:

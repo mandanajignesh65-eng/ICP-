@@ -20,6 +20,15 @@ ID_TYPES = {"lookup", "ownerlookup", "userlookup", "multiselectlookup", "multius
 TEXT_TYPES = {"text", "textarea", "email", "phone", "website", "autonumber", "profileimage", "fileupload", "imageupload"}
 CATEGORY_TYPES = {"picklist", "multiselectpicklist", "boolean"}
 
+NULL_LIKE = {"null", "none", "na", "n/a", "nan", "-", "--", "---", "nil", "not available", "(none)", "-none-", "undefined", "#n/a"}
+
+
+def blank_nulls(s: pd.Series) -> pd.Series:
+    """Treat typed placeholders like 'NULL', 'NA', '-' as missing values."""
+    st = s.astype("string").str.strip()
+    return st.mask(st.str.lower().isin(NULL_LIKE) | (st == ""))
+
+
 LEGAL_SUFFIXES = r"\b(private|pvt|limited|ltd|llp|llc|inc|incorporated|corp|corporation|co|company|gmbh|plc|pte|sa|bv)\b"
 
 
@@ -133,9 +142,9 @@ class Cleaner:
             elif k == "id":
                 df[c] = df[c].astype("string").str.strip().replace({"": pd.NA, "nan": pd.NA})
             elif k == "category":
-                df[c] = self.normalise(module, c, df[c])
+                df[c] = self.normalise(module, c, blank_nulls(df[c]))
             else:
-                df[c] = df[c].astype("string").str.strip().replace({"": pd.NA})
+                df[c] = blank_nulls(df[c])
         return df, kinds
 
     def normalise(self, module: str, field: str, s: pd.Series) -> pd.Series:
@@ -151,6 +160,25 @@ class Cleaner:
         for (o, n), cnt in changed.value_counts().items():
             self.log_rows.append({"module": module, "field": field, "original": o, "cleaned": n, "records": int(cnt)})
         return out.astype("object")
+
+
+# ---------------------------------------------------------------- feature families
+TEAM_RX = re.compile(r"(owner|^ae_|ae_name|sdr|bdr|created_by|modified_by|assigned|sales_?person|sales_?rep|layout|approval)", re.I)
+PROCESS_RX = re.compile(r"(status|next_?step|meeting|demo|stage|duration|cycle|probability|follow|activity|reminder|"
+                        r"priority|forecast|score|visit|touch|last_|conversion_time|days_|reason)", re.I)
+SKIP_RX = re.compile(r"(exchange_rate|^tag$|record_image|unsubscribed|locked|approval_state|layout|wizard|^id$)", re.I)
+
+
+def deal_family(field: str, custom: bool) -> str | None:
+    """Which question a deal field answers: who the customer is ('Deal'), who sold it ('Team'),
+    how far/fast the deal moved ('Process'). None = skip."""
+    if SKIP_RX.search(field):
+        return None
+    if TEAM_RX.search(field):
+        return "Team"
+    if PROCESS_RX.search(field):
+        return "Process"
+    return "Deal"
 
 
 # ---------------------------------------------------------------- title → function / seniority
@@ -281,6 +309,7 @@ def prepare(store: Store, log=print) -> None:
         return
     stage_c = col(deals, "Stage")
     outcome_map = stage_outcomes(store, deals[stage_c])
+    deals = deals.copy()  # de-fragment the wide Zoho frame before adding derived columns
     deals["outcome"] = deals[stage_c].map(outcome_map).fillna("Open")
     deals["is_won"] = (deals["outcome"] == "Won").astype(int)
     created_c, close_c = col(deals, "Created_Time"), col(deals, "Closing_Date")
@@ -363,18 +392,22 @@ def prepare(store: Store, log=print) -> None:
         if c in skip_deal or c in derived:
             continue
         k = deal_kinds.get(c, "text")
+        custom = cl.custom.get(("Deals", c), False)
+        fam = "Team" if c == "Owner_Name" else deal_family(c, custom)
+        if fam is None or (k == "date" and not custom):
+            continue
         if k in ("category", "numeric", "date", "text"):
-            add(f"deal.{c}", deals[c], "Deal", k, cl.labels.get(("Deals", c), c).replace("_", " "),
-                cl.custom.get(("Deals", c), False), "Deals", c)
+            label = cl.labels.get(("Deals", c), c).replace("__s", "").replace("_", " ").strip()
+            add(f"deal.{c}", deals[c], fam, k, label, custom, "Deals", c)
 
     acc_c = col(deals, "Account_Name")
     if acc_c and not acc.empty:
         acc_idx = acc.set_index("Id")
         emp_raw = col(acc, "Employees", "No_of_Employees")
-        skip_acc = {"Id", "name_key", "is_duplicate", "Owner", "Owner_Name", emp_raw}  # raw headcount duplicates the size band
+        skip_acc = {"Id", "name_key", "is_duplicate", "Owner", "Owner_Name", emp_raw, "domain"}  # raw headcount duplicates the size band
         nice = {"employee_band": "Company size", "domain": "Domain"}
         for c in acc.columns:
-            if c in skip_acc or c.endswith("_Time"):
+            if c in skip_acc or c.endswith("_Time") or SKIP_RX.search(c):
                 continue
             k = acc_kinds.get(c, "text")
             if k in ("category", "numeric", "text"):
@@ -394,7 +427,7 @@ def prepare(store: Store, log=print) -> None:
     # source "Deal" = who/what the deal is; source "Activity" = how it was sold (process, not ICP)
     for c, label, kind, source in (
             ("amount_band", "Deal size band", "category", "Deal"),
-            ("created_quarter", "Created quarter", "category", "Deal"),
+            ("created_quarter", "Created quarter", "category", "Time"),
             ("n_calls", "Calls (before close)", "numeric", "Activity"),
             ("n_meetings", "Meetings (before close)", "numeric", "Activity"),
             ("n_tasks", "Tasks (before close)", "numeric", "Activity"),

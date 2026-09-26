@@ -89,6 +89,15 @@ with head_r:
         sel_owners = st.multiselect("Owner", owners, placeholder="All owners")
         pipes = sorted(deals_all["Pipeline"].dropna().unique()) if "Pipeline" in deals_all else []
         sel_pipes = st.multiselect("Pipeline", pipes, placeholder="All pipelines") if len(pipes) > 1 else []
+        dtypes = sorted(deals_all["Type"].dropna().unique()) if "Type" in deals_all else []
+        sel_types = st.multiselect("Deal type", dtypes, placeholder="All deal types",
+                                   help="Pick 'New Business' to learn who becomes a NEW customer — expansion deals "
+                                        "with existing clients win far more often and can inflate the picture.") if dtypes else []
+        stages = sorted(deals_all["Stage"].dropna().unique()) if "Stage" in deals_all else []
+        junkish = [s for s in stages if any(w in s.lower() for w in ("junk", "spam", "duplicate", "test"))]
+        skip_stages = st.multiselect("Leave out stages", stages, default=junkish,
+                                     help="Deals in these stages are removed from every chart — e.g. Junk deals "
+                                          "that were never real opportunities and would otherwise count as losses.")
         min_n = st.slider("Minimum deals per group", 5, 50, 10,
                           help="Smaller groups are merged into 'Other' so tiny samples can't mislead.")
 
@@ -99,6 +108,10 @@ if sel_owners:
     mask &= deals_all["Owner_Name"].isin(sel_owners)
 if sel_pipes:
     mask &= deals_all["Pipeline"].isin(sel_pipes)
+if skip_stages:
+    mask &= ~deals_all["Stage"].isin(skip_stages)
+if sel_types:
+    mask &= deals_all["Type"].isin(sel_types)
 deals = deals_all[mask]
 wide = D["deal_wide"][D["deal_wide"]["deal_id"].isin(deals["Id"])]
 sig = run_scan(wide, D["feature_catalog"], min_n)
@@ -183,7 +196,9 @@ if section == "Overview":
 # ================================================================== SIGNALS
 elif section == "Signals":
     with card("Every field, ranked", f"{len(usable)} fields tested against {sig['closed']:,} closed deals. "
-              "Longer bar = stronger separation between won and lost. Faded = not statistically reliable."):
+              "Longer bar = stronger separation between won and lost. Faded = not statistically reliable. "
+              "Team (who sold it), Process (how far the deal moved) and Time fields are shown for context "
+              "but never used for the ICP."):
         if usable.empty:
             ui.empty()
         else:

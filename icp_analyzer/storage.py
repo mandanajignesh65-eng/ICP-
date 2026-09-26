@@ -15,6 +15,9 @@ class Store:
         self.con = duckdb.connect(str(self.path), read_only=read_only)
 
     def write(self, name: str, df: pd.DataFrame) -> None:
+        if df is None or df.shape[1] == 0:  # nothing to store (e.g. an empty module): drop any stale copy
+            self.con.execute(f'DROP TABLE IF EXISTS "{name}"')
+            return
         # DuckDB column names are case-insensitive: make "Amount" and "amount" distinct instead of silently merging
         seen, cols = set(), []
         for c in map(str, df.columns):

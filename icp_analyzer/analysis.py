@@ -292,7 +292,7 @@ def icp_draft(sig: dict, include_sources=("Account", "Contact", "Deal")) -> pd.D
         return pd.DataFrame()
     ok = f[f["strength"].isin(["Strong", "Moderate", "Weak"]) & f["source"].isin(include_sources)]
     rows = v[v["feature"].isin(ok["feature"]) & v["confidence"].isin(["High", "Medium"])
-             & v["direction"].isin(["Better", "Worse"]) & ~v["value"].isin(["(blank)", "Other (rare values)"])]
+             & v["direction"].isin(["Better", "Worse"]) & ~v["value"].isin(["(blank)", "Other (rare values)", "Filled"])]
     out = rows.assign(verdict=np.where(rows["direction"] == "Better", "✅ Target", "⛔ Avoid / deprioritise"))
     out = out.merge(ok[["feature", "strength"]], on="feature")
     return out[["label", "value", "verdict", "rate", "lift", "n", "share_of_wins", "confidence", "strength"]] \

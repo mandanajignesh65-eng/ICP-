@@ -17,7 +17,8 @@ from .stats import _fmt, association, fdr, mann_whitney, numeric_bins, rate_tabl
 
 LEAKY_NAME = re.compile(
     r"(won|lost|loss|reason|onboard|contract|invoice|payment|paid|signed|renewal|churn|clos|"
-    r"purchase.?order|kick.?off|go.?live|implementation|handover|probability|expected.?revenue|forecast)", re.I)
+    r"purchase.?order|kick.?off|go.?live|implementation|handover|probability|expected.?revenue|forecast|"
+    r"duration|cycle|competitor)", re.I)
 MAX_CATEGORIES = 30
 
 
@@ -79,8 +80,12 @@ def scan(wide: pd.DataFrame, catalog: pd.DataFrame, min_n: int = 10) -> dict[str
         leak = []
         if abs(fill_won - fill_lost) >= 0.5:
             leak.append(f"filled for {fill_won:.0%} of won vs {fill_lost:.0%} of lost deals")
-        if r.field and LEAKY_NAME.search(str(r.field)) and r.source in ("Deal",):
+        elif fill_won >= 0.08 and fill_won >= 4 * max(fill_lost, 0.005) and r.source != "Activity":
+            leak.append(f"mostly filled on won deals ({fill_won:.0%} of won vs {fill_lost:.0%} of lost) — likely entered after the sale")
+        if r.source not in ("Account", "Contact", "Activity") and (LEAKY_NAME.search(str(r.field or "")) or LEAKY_NAME.search(str(r.label))):
             leak.append("name suggests it is set when/after the deal closes")
+        if r.source == "Account" and re.search(r"(account_type|customer_status|lifecycle|stage|client_status)", str(r.field or ""), re.I):
+            leak.append("account status (e.g. 'Customer') is updated after a sale")
         if v > 0.8:
             leak.append("separates won/lost almost perfectly")
 

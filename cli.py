@@ -121,7 +121,8 @@ def cmd_extract(args):
     print("Discovering CRM structure...")
     discover(c, store)
     print("Extracting data (Bulk Read)...")
-    extract(c, store, modules=args.modules, notes=args.notes, stage_history=args.stage_history)
+    extract(c, store, modules=args.modules, notes=args.notes,
+            stage_history=args.stage_history or args.history_only, bulk=not args.history_only)
     store.close()
 
 
@@ -152,6 +153,7 @@ def main():
         x.add_argument("--modules", nargs="*", help="Only these modules (default: all relevant)")
         x.add_argument("--notes", action="store_true", help="Also pull Notes (REST API)")
         x.add_argument("--stage-history", action="store_true", help="Pull deal stage history (1 API call per deal)")
+        x.add_argument("--history-only", action="store_true", help="Only fetch missing/open deal stage history")
         x.set_defaults(fn=fn or (lambda a: (cmd_extract(a), cmd_prepare(a))))
     sub.add_parser("prepare").set_defaults(fn=cmd_prepare)
     sub.add_parser("dashboard").set_defaults(fn=cmd_dashboard)
