@@ -169,6 +169,8 @@ if section == "Summary":
               "Open “Best customers” for the full picture behind each line."):
         rows = []
         for key, a in answers.items():
+            if key in IN.CONTEXT_ONLY:
+                continue
             cardf = a["card"]
             good = cardf[cardf["verdict"] == "Focus"].sort_values("rate", ascending=False)
             bad = cardf[cardf["verdict"] == "Deprioritize"].sort_values("rate")
@@ -214,6 +216,9 @@ elif section == "Best customers":
                   f"Average win rate: {base:.0%}."):
             st.markdown(f"<p class='takeaway'>{' · '.join(parts) or 'No group is clearly better or worse than average.'}</p>",
                         unsafe_allow_html=True)
+            if q.key in IN.CONTEXT_ONLY:
+                note("Context only: deal amounts are often entered during the sale, so bigger amounts partly reflect deals "
+                     "that were already going well. Not used in the Summary recommendations.")
             natural_order = main["value"].map(range_key).notna().all()
             ui.verdict_bars(order_values(main) if natural_order else main.sort_values("rate", ascending=False), base)
             note("Green = focus · Grey = about average · Red = deprioritize. The thin line shows how sure we are "

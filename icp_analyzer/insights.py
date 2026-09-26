@@ -18,6 +18,9 @@ from .signals import _as_groups, closed_deals
 from .stats import rate_table
 
 SPECIAL = {"(blank)", "Other (rare values)", "Filled"}
+# Shown for context but never recommended: deal amounts are often typed in during the sale, so they partly
+# reflect how far a deal got rather than who the customer is.
+CONTEXT_ONLY = {"deal_size"}
 
 
 @dataclass(frozen=True)
@@ -128,6 +131,8 @@ def conclusions(answers: dict[str, dict], base: float, money) -> dict[str, list[
     """Plain-English 'focus / deprioritize / fix' statements, strongest first."""
     focus, avoid, fix = [], [], []
     for key, a in answers.items():
+        if key in CONTEXT_ONLY:
+            continue
         card, q = a["card"], a["question"]
         name = q.name.lower()
         good = card[card["verdict"] == "Focus"].sort_values("rate", ascending=False).head(3)
