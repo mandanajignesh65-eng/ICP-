@@ -1,6 +1,7 @@
 """Command line: connect Zoho, extract, prepare, and open the dashboard.
 
   python cli.py demo                 # load synthetic CRM data (no Zoho needed)
+  python cli.py connect              # guided Zoho connection: paste a grant code, token saved, connection tested
   python cli.py auth-url             # print the scopes to use when creating the grant code
   python cli.py exchange-code CODE   # turn a Self Client grant code into a refresh token (saved to .env)
   python cli.py check                # test the Zoho connection
@@ -43,22 +44,60 @@ def cmd_auth_url(args):
     print("4. Copy the generated code and run:  python cli.py exchange-code <CODE>")
 
 
-def cmd_exchange(args):
+CODE_HELP = {
+    "invalid_code": "The code is expired, was already used, or belongs to another data center. "
+                    "Codes work once and only for the time you picked (e.g. 10 minutes). Generate a new one.",
+    "invalid_client": "ZOHO_CLIENT_ID / ZOHO_CLIENT_SECRET in .env don't match this Self Client or data center.",
+}
+
+
+def _exchange(code: str) -> str:
+    """Trade a one-time grant code for a long-lived refresh token and save it to .env."""
     s = get_settings()
     if not (s.client_id and s.client_secret):
-        sys.exit("Set ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET in .env first.")
+        sys.exit("Set ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET in .env first (from the Self Client in the Zoho API console).")
     r = requests.post(f"{s.accounts_url}/oauth/v2/token", params={
         "grant_type": "authorization_code", "client_id": s.client_id,
-        "client_secret": s.client_secret, "code": args.code}, timeout=30).json()
+        "client_secret": s.client_secret, "code": code.strip()}, timeout=30).json()
     token = r.get("refresh_token")
     if not token:
-        sys.exit(f"Zoho did not return a refresh token: {r.get('error', r)}. "
-                 "The code expires quickly and works only once — generate a new one and retry.")
+        err = str(r.get("error", r))
+        if "access_token" in r:
+            err = "no refresh token returned — this code was probably already exchanged once"
+        sys.exit(f"\nZoho did not accept the code: {err}\n{CODE_HELP.get(err, '')}")
     env = ROOT / ".env"
     lines = [l for l in env.read_text().splitlines() if not l.startswith("ZOHO_REFRESH_TOKEN=")] if env.exists() else []
     lines.append(f"ZOHO_REFRESH_TOKEN={token}")
     env.write_text("\n".join(lines) + "\n")
-    print("Refresh token saved to .env (never commit this file). Now run:  python cli.py check")
+    import os
+    os.environ["ZOHO_REFRESH_TOKEN"] = token
+    print("Refresh token saved to .env (this file is never committed).")
+    return token
+
+
+def cmd_exchange(args):
+    _exchange(args.code)
+    print("Now run:  python cli.py check")
+
+
+def cmd_connect(args):
+    """Guided setup: shows the steps, asks for the grant code (hidden), saves the token, tests the connection."""
+    from getpass import getpass
+    s = get_settings()
+    if not (s.client_id and s.client_secret):
+        cmd_auth_url(args)
+        sys.exit("\nFirst put ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET in .env, save it, then run  python cli.py connect  again.")
+    console = s.accounts_url.replace("accounts", "api-console")
+    print(f"1. Open {console}  -> your Self Client -> 'Generate Code' tab")
+    print(f"2. Scope (paste exactly):\n   {SCOPES}")
+    print("3. Time duration: 10 minutes · Description: ICP analyzer · Create")
+    print("4. Copy the code and paste it below (input is hidden; right-click or Ctrl+V to paste, then Enter)\n")
+    code = getpass("Grant code: ")
+    if not code.strip():
+        sys.exit("No code entered.")
+    _exchange(code)
+    print()
+    cmd_check(args)
 
 
 def _client():
@@ -106,6 +145,7 @@ def main():
     e = sub.add_parser("exchange-code")
     e.add_argument("code")
     e.set_defaults(fn=cmd_exchange)
+    sub.add_parser("connect", help="Guided Zoho connection (recommended)").set_defaults(fn=cmd_connect)
     sub.add_parser("check").set_defaults(fn=cmd_check)
     for name, fn in (("extract", cmd_extract), ("all", None)):
         x = sub.add_parser(name)
@@ -116,7 +156,11 @@ def main():
     sub.add_parser("prepare").set_defaults(fn=cmd_prepare)
     sub.add_parser("dashboard").set_defaults(fn=cmd_dashboard)
     args = p.parse_args()
-    args.fn(args)
+    from icp_analyzer.zoho.client import ZohoError
+    try:
+        args.fn(args)
+    except ZohoError as e:  # show Zoho problems as a clear message, not a traceback
+        sys.exit(f"\n{e}")
 
 
 if __name__ == "__main__":

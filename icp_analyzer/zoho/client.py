@@ -17,11 +17,28 @@ class ZohoError(RuntimeError):
     pass
 
 
+# Plain-English explanations for Zoho's OAuth error codes
+AUTH_HELP = {
+    "invalid_code": ("The value in ZOHO_REFRESH_TOKEN is not a valid refresh token. It is probably the one-time "
+                     "grant code from the Zoho console (they look alike). Fix: run  python cli.py connect  "
+                     "and paste a freshly generated code."),
+    "invalid_client": ("Zoho does not recognise ZOHO_CLIENT_ID / ZOHO_CLIENT_SECRET for this data center. "
+                       "Check both values in .env and that ZOHO_DC matches your Zoho URL (zoho.in -> in)."),
+    "invalid_client_secret": "ZOHO_CLIENT_SECRET is wrong. Copy it again from the Self Client in the Zoho API console.",
+    "access_denied": "Zoho refused access. Make sure the user who generated the code can see the CRM data.",
+}
+
+
+def auth_error(code: str, context: str) -> ZohoError:
+    return ZohoError(f"{context}: {code}. {AUTH_HELP.get(code, 'Check ZOHO_DC and the credentials in .env.')}")
+
+
 class ZohoClient:
     def __init__(self, settings: Settings, log=print):
         missing = [k for k in ("client_id", "client_secret", "refresh_token") if not getattr(settings, k)]
         if missing:
-            raise ZohoError(f"Missing Zoho credentials in .env: {', '.join('ZOHO_' + m.upper() for m in missing)}")
+            hint = " Run  python cli.py connect  to create it." if missing == ["refresh_token"] else ""
+            raise ZohoError(f"Missing in .env: {', '.join('ZOHO_' + m.upper() for m in missing)}.{hint}")
         self.s = settings
         self.log = log
         self.session = requests.Session()
@@ -45,7 +62,7 @@ class ZohoClient:
         )
         data = r.json()
         if "access_token" not in data:
-            raise ZohoError(f"Token refresh failed: {data.get('error', data)}. Check ZOHO_DC and credentials.")
+            raise auth_error(str(data.get("error", data)), "Could not log in to Zoho")
         self._token = data["access_token"]
         self._token_expiry = time.time() + int(data.get("expires_in", 3600))
         self.api_domain = data.get("api_domain", self.api_domain)
@@ -57,6 +74,9 @@ class ZohoClient:
         for attempt in range(retries):
             headers = {"Authorization": f"Zoho-oauthtoken {self._access_token()}"}
             r = self.session.request(method, url, params=params, json=json, headers=headers, timeout=120)
+            if r.status_code == 401 and "OAUTH_SCOPE_MISMATCH" in r.text:
+                raise ZohoError(f"{method} {path}: the Zoho code was generated without a scope this step needs. "
+                                "Run  python cli.py connect  and generate the code with all 5 scopes it shows.")
             if r.status_code == 401 and attempt == 0:
                 self._token = None  # expired token: refresh once
                 continue

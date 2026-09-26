@@ -38,11 +38,9 @@ The demo CRM has patterns planted on purpose (e.g. SaaS and referrals win more, 
 ### Connect Zoho CRM (read-only)
 
 1. `copy .env.example .env`. Set `ZOHO_DC=in` for zoho.in accounts.
-2. Run `python cli.py auth-url` and follow the steps it prints:
-   - Open the Zoho API console (`https://api-console.zoho.in`) → **Add Client → Self Client**.
-   - Copy the **Client ID** and **Client Secret** into `.env`.
-   - Open the **Generate Code** tab, paste the read-only scopes shown, set the duration to 10 minutes, and click **Create**.
-3. `python cli.py exchange-code <THE_CODE>`. This saves a refresh token into `.env`.
+2. Open the Zoho API console (`https://api-console.zoho.in`) → **Add Client → Self Client**. Copy the **Client ID** and **Client Secret** into `.env` and save.
+3. `python cli.py connect`. It shows the scopes to paste in the console's **Generate Code** tab, asks for the code (hidden input), saves the refresh token to `.env`, and tests the connection.
+   The grant code and the refresh token both start with `1000.`. Never paste the grant code into `.env` yourself.
 4. `python cli.py check` tests the connection and shows record counts.
 5. `python cli.py all --stage-history` extracts everything and prepares it.
 6. `python cli.py dashboard`
