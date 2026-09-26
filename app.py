@@ -342,6 +342,44 @@ elif section == "All fields":
 
 # ================================================================== PIPELINE
 elif section == "Pipeline":
+    fc = A.pipeline_forecast(deals, D["clean_stage_history"], D["meta_picklist"], stage_order)
+    if fc:
+        ui.kpis([
+            ("Open pipeline", money(fc["total"]), f"{fc['stale_n'] + fc['fresh_n']:,} open deals"),
+            ("Weighted by Zoho %", money(fc["zoho"]), "using the % set per stage in Zoho"),
+            ("Weighted by real history", money(fc["actual"]), "how often deals at each stage actually won"),
+            ("Stale", money(fc["stale_amount"]), f"{fc['stale_n']:,} deals past close date or open > 1 year"),
+            ("Active, realistic", money(fc["fresh_actual"]), f"{fc['fresh_n']:,} active deals × real win odds"),
+        ])
+        s = fc["stages"]
+        with card("Stage probability: Zoho's setting vs what actually happened",
+                  "Grey = the % your team set for each stage in Zoho. Blue = of past deals that reached that stage, "
+                  "the share that was actually won. A big gap means the pipeline value is overstated."):
+            fig = go.Figure()
+            fig.add_bar(x=s["Stage"], y=s["zoho_prob"], name="Zoho setting", marker_color=ui.MUTED,
+                        text=[pct(x) for x in s["zoho_prob"]], textposition="outside", cliponaxis=False)
+            fig.add_bar(x=s["Stage"], y=s["actual_rate"], name="Actually won", marker_color=ui.BLUE,
+                        text=[pct(x) for x in s["actual_rate"]], textposition="outside", cliponaxis=False,
+                        customdata=s["history_n"], hovertemplate="%{x}<br>Won %{y:.0%} of %{customdata} past deals<extra></extra>")
+            fig.update_layout(barmode="group", yaxis=dict(tickformat=".0%", range=[0, 1.1]))
+            plot(fig, 320)
+        with card("Open deals by stage"):
+            view = s[["Stage", "deals", "amount", "zoho_prob", "zoho_weighted", "actual_rate", "actual_weighted", "stale", "no_amount", "median_age"]]
+            st.dataframe(view, hide_index=True, use_container_width=True, column_config={
+                "deals": "Open deals", "amount": st.column_config.NumberColumn("Total value", format="%.0f"),
+                "zoho_prob": st.column_config.NumberColumn("Zoho %", format="percent"),
+                "zoho_weighted": st.column_config.NumberColumn("Value × Zoho %", format="%.0f"),
+                "actual_rate": st.column_config.NumberColumn("Real win %", format="percent"),
+                "actual_weighted": st.column_config.NumberColumn("Value × real %", format="%.0f"),
+                "stale": "Stale deals", "no_amount": "No amount entered",
+                "median_age": st.column_config.NumberColumn("Typical age (days)", format="%.0f")})
+            note(f"The 10 biggest open deals are {fc['top10_share']:.0%} of the total open value — check them first.")
+        with st.expander("The 10 biggest open deals"):
+            top = fc["top"]
+            cols = [c for c in ("Deal_Name", "Stage", "amount", "closed_on", "age_days", "Owner_Name") if c in top]
+            st.dataframe(top[cols], hide_index=True, use_container_width=True, column_config={
+                "Deal_Name": "Deal", "amount": st.column_config.NumberColumn("Value", format="%.0f"),
+                "closed_on": st.column_config.DateColumn("Expected close"), "age_days": "Days open", "Owner_Name": "Owner"})
     sf = A.stage_funnel(D["clean_stage_history"], deals, stage_order)
     op = A.open_pipeline(deals, stage_order)
     c1, c2 = st.columns(2)

@@ -141,6 +141,43 @@ def open_pipeline(deals: pd.DataFrame, stage_order: list[str]) -> pd.DataFrame:
     return t.sort_values("order").drop(columns="order")
 
 
+def pipeline_forecast(deals: pd.DataFrame, history: pd.DataFrame, picklist: pd.DataFrame, stage_order: list[str]) -> dict:
+    """Open pipeline by stage, weighted two ways:
+    - Zoho's probability: the % the sales team set for each stage in Zoho settings
+    - Actual history: of past closed deals that reached this stage, the share that was won
+    Also flags stale deals (close date passed or open for over a year)."""
+    now = pd.Timestamp.now()
+    o = deals[deals["outcome"] == "Open"].copy()
+    if o.empty:
+        return {}
+    st = picklist[(picklist["module"] == "Deals") & (picklist["field"] == "Stage")] if not picklist.empty else pd.DataFrame()
+    prob = dict(zip(st["display_value"], pd.to_numeric(st["probability"], errors="coerce") / 100)) if not st.empty else {}
+    hist_rate, hist_n = {}, {}
+    if not history.empty:
+        closed = deals[deals["outcome"].isin(["Won", "Lost"])][["Id", "is_won"]]
+        h = history.merge(closed, left_on="deal_id", right_on="Id").drop_duplicates(["deal_id", "Stage"])
+        grp = h.groupby("Stage")["is_won"]
+        hist_rate, hist_n = grp.mean().to_dict(), grp.size().to_dict()
+    o["stale"] = (o["closed_on"] < now) | (o["age_days"] > 365)
+    t = o.groupby("Stage").agg(deals=("Id", "count"), amount=("amount", "sum"), stale=("stale", "sum"),
+                               no_amount=("amount", lambda s: int((~(s > 0)).sum())),
+                               median_age=("age_days", "median")).reset_index()
+    t["zoho_prob"] = t["Stage"].map(prob)
+    t["actual_rate"] = t["Stage"].map(hist_rate)
+    t["history_n"] = t["Stage"].map(hist_n)
+    t["zoho_weighted"] = t["amount"] * t["zoho_prob"].fillna(0)
+    t["actual_weighted"] = t["amount"] * t["actual_rate"].fillna(0)
+    t["order"] = t["Stage"].map({s: i for i, s in enumerate(stage_order)}).fillna(99)
+    t = t.sort_values("order").drop(columns="order")
+    fresh = o[~o["stale"]]
+    top = o.sort_values("amount", ascending=False).head(10)
+    return {"stages": t, "total": o["amount"].sum(), "zoho": t["zoho_weighted"].sum(), "actual": t["actual_weighted"].sum(),
+            "stale_n": int(o["stale"].sum()), "stale_amount": o.loc[o["stale"], "amount"].sum(),
+            "fresh_n": len(fresh), "fresh_amount": fresh["amount"].sum(),
+            "fresh_actual": (fresh["amount"] * fresh["Stage"].map(hist_rate).fillna(0)).sum(),
+            "top": top, "top10_share": top["amount"].sum() / o["amount"].sum() if o["amount"].sum() else np.nan}
+
+
 def stage_funnel(history: pd.DataFrame, deals: pd.DataFrame, stage_order: list[str]) -> pd.DataFrame:
     """How many closed deals reached each stage, and the win rate of those that did."""
     if history.empty:
