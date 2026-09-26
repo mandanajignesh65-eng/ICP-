@@ -90,6 +90,18 @@ p, li {{ color: {INK}; }}
 .note {{ font-size: .82rem; color: {INK_3}; margin: .6rem 0 0; }}
 .stat {{ font-size: 2.6rem; font-weight: 600; letter-spacing: -0.03em; color: {INK}; line-height: 1; }}
 .stat-l {{ font-size: .82rem; color: {INK_3}; margin-top: .3rem; }}
+.muted {{ color: {INK_3}; font-weight: 400; }}
+.concl {{ list-style: none; padding: 0; margin: .3rem 0 0; }}
+.concl li {{ padding: 10px 0 10px 22px; border-bottom: 1px solid {HAIR}; position: relative; font-size: .93rem; line-height: 1.45; }}
+.concl li:last-child {{ border-bottom: none; }}
+.concl li::before {{ content: ""; position: absolute; left: 4px; top: 17px; width: 8px; height: 8px; border-radius: 50%; }}
+.concl.good li::before {{ background: {GREEN}; }}
+.concl.bad li::before {{ background: {RED}; }}
+.concl.fix li::before {{ background: {ORANGE}; }}
+.takeaway {{ font-size: 1.05rem; line-height: 1.5; color: {INK}; margin: .2rem 0 .6rem; }}
+.icp-row {{ display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid {HAIR}; align-items: start; }}
+.icp-row:last-child {{ border-bottom: none; }}
+.icp-row .k {{ font-size: .85rem; color: {INK_3}; padding-top: 7px; }}
 div[data-testid="stSegmentedControl"] {{ margin: 1.4rem 0 1.2rem; }}
 div[data-testid="stExpander"] details {{ border: none; background: transparent; }}
 div[data-testid="stExpander"] summary {{ color: {INK_2}; font-size: .88rem; }}
@@ -190,6 +202,37 @@ def chips(rows: pd.DataFrame, kind: str):
     html = "".join(f"<span class='chip {kind}'><span class='f'>{l.split(' · ')[-1]}</span><b>{v}</b>"
                    f"<span class='r'>{pct(r)}</span></span>" for l, v, r in zip(rows["label"], rows["value"], rows["rate"]))
     st.markdown(f"<div class='chips'>{html}</div>", unsafe_allow_html=True)
+
+
+VERDICT = {"Focus": GREEN, "Deprioritize": RED, "Average": MUTED, "Too little data": "#E5E5EA", "—": "#E5E5EA"}
+
+
+def conclusion_list(items: list[str], kind: str, empty_msg: str):
+    if not items:
+        return empty(empty_msg)
+    st.markdown(f"<ul class='concl {kind}'>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>", unsafe_allow_html=True)
+
+
+def verdict_bars(card: pd.DataFrame, base: float, height: int | None = None):
+    """Win rate per segment, colored by verdict (Focus / Average / Deprioritize)."""
+    t = card[card["value"] != "Filled"].copy()
+    if t.empty:
+        return empty()
+    t = t.iloc[::-1]
+    fig = go.Figure(go.Bar(
+        x=t["rate"], y=t["label"], orientation="h", marker_color=[VERDICT.get(v, MUTED) for v in t["verdict"]],
+        text=[pct(r) for r in t["rate"]], textposition="outside", cliponaxis=False, textfont=dict(color=INK_2, size=12),
+        error_x=dict(type="data", symmetric=False, array=(t["ci_hi"] - t["rate"]).clip(lower=0),
+                     arrayminus=(t["rate"] - t["ci_lo"]).clip(lower=0), color="rgba(0,0,0,.18)", thickness=1.2, width=0),
+        customdata=t[["n", "won", "verdict"]].values,
+        hovertemplate="<b>%{y}</b><br>Win rate %{x:.0%} (%{customdata[1]} of %{customdata[0]})<br>%{customdata[2]}<extra></extra>"))
+    fig.add_vline(x=base, line_width=1, line_dash="dot", line_color=INK_3)
+    fig.add_annotation(x=base, y=1, yref="paper", yanchor="bottom", text=f"avg {base:.0%}", showarrow=False,
+                       font=dict(size=11, color=INK_3))
+    xmax = min(1.0, float(max(t["ci_hi"].max(), t["rate"].max())) + 0.12)
+    fig.update_layout(xaxis=dict(tickformat=".0%", range=[0, xmax], showgrid=True, gridcolor="#F0F0F3"),
+                      yaxis=dict(showgrid=False), bargap=0.4)
+    plot(fig, height or max(240, 34 * len(t) + 60))
 
 
 def segments(rules: pd.DataFrame, base: float):

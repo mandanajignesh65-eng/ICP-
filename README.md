@@ -4,19 +4,24 @@ Connect a Zoho CRM (read-only), pull every module and field, clean it, and test 
 
 ## What you get
 
-| Dashboard tab | What it answers |
+The dashboard answers business questions, not fields. By default it looks at **deals to new customers**, and leaves out Junk deals (both can be changed under Filters).
+
+| Section | Question it answers |
 |---|---|
-| 📋 Summary | KPIs, strongest findings in plain English, and an ICP draft (target / avoid) built from your own won/lost data |
-| 🩺 Data health | How complete and trustworthy each field is, duplicates, stale deals, values merged during cleaning |
-| 📡 Signals | Every field ranked by how strongly it separates won from lost deals, with a drill-down per field |
-| 🧭 Segments & combos | Combinations of traits that win (decision-tree segments) and a two-field win-rate heatmap |
-| 💰 Revenue & cycle | Revenue, deal size, and cycle length by segment; revenue concentration |
-| 🔻 Pipeline & losses | Open pipeline, stage funnel, where lost deals die, loss reasons, competitors |
-| 🎯 Leads & sources | Lead volume → conversion → deals → revenue per source; conversion by any lead field |
-| 📞 Activities | Meetings, calls, and speed of first touch on won vs lost deals (process signals, not ICP) |
-| 👤 Buyer roles | Win rate by contact seniority, function, and exact title (seeds for personas) |
-| 📈 Trends | Monthly deals and revenue, win rate by quarter |
-| 🗂 Data | Browse and download every cleaned table |
+| Summary | Who should we focus on, who should we deprioritize, and what data is missing? |
+| Best customers | For each question (industry, company size, market, lead source, buyer): which groups win more often, pay more, and close faster? |
+| Lead sources | Which channels produce deals that close, and how leads convert |
+| Pipeline | How far deals get, where they stall, why they're lost, how long deals take, how concentrated revenue is |
+| Sales process | How won deals were worked: meetings, calls, speed of first contact |
+| Buyers | Which job levels and functions are on won deals |
+| All fields | Every customer field in the CRM, ranked, for exploring |
+| Data quality | How complete and clean the CRM data is |
+
+Each group gets a verdict:
+- **Focus:** the win rate is clearly above average, or the value per opportunity (win rate × typical won deal) is at least 1.5× average, backed by enough wins.
+- **Deprioritize:** the win rate is clearly below average.
+- **Average:** no clear difference either way.
+- **Too little data:** too few deals to judge.
 
 ## Setup
 

@@ -92,7 +92,20 @@ def test_dashboard_renders_without_errors(db, monkeypatch):
     at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
     at.run()
     assert not at.exception, [e.message for e in at.exception]
-    for section in ["Signals", "Segments", "Revenue", "Pipeline", "Leads", "Buyers", "Sales motion", "Data quality"]:
+    for section in ["Best customers", "Lead sources", "Pipeline", "Sales process", "Buyers", "All fields", "Data quality"]:
         at.session_state["section"] = section
         at.run()
         assert not at.exception, (section, [e.message for e in at.exception])
+
+
+def test_business_answers_find_planted_patterns(sig):
+    from icp_analyzer import insights as IN
+    answers = IN.all_answers(sig, sig["wide"], 10)
+    assert {"industry", "source", "size"} <= set(answers)
+    ind = answers["industry"]["card"].set_index("value")
+    assert ind.loc["Software/SaaS", "verdict"] == "Focus"
+    assert ind.loc["Retail", "verdict"] == "Deprioritize"
+    src = answers["source"]["card"].set_index("value")
+    assert src.loc["Referral", "verdict"] == "Focus"
+    concl = IN.conclusions(answers, sig["base_rate"], lambda x: f"{x:.0f}")
+    assert concl["focus"] and concl["avoid"]

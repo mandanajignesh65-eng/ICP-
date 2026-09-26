@@ -12,9 +12,10 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from icp_analyzer import analysis as A
+from icp_analyzer import insights as IN
 from icp_analyzer import ui
 from icp_analyzer.config import default_db_path
-from icp_analyzer.signals import drivers, scan
+from icp_analyzer.signals import scan
 from icp_analyzer.stats import numeric_bins, order_values, range_key
 from icp_analyzer.storage import Store
 from icp_analyzer.ui import card, note, pct, plot
@@ -49,8 +50,8 @@ def run_scan(wide, catalog, min_n):
 
 
 @st.cache_data(show_spinner=False)
-def run_drivers(wide, fields, sources):
-    return drivers(wide, fields[fields["source"].isin(sources)])
+def run_answers(wide, _sig, min_n):
+    return IN.all_answers(_sig, wide, min_n)
 
 
 path = db_arg()
@@ -91,10 +92,11 @@ with head_r:
         sel_owners = st.multiselect("Owner", owners, placeholder="All owners")
         pipes = sorted(deals_all["Pipeline"].dropna().unique()) if "Pipeline" in deals_all else []
         sel_pipes = st.multiselect("Pipeline", pipes, placeholder="All pipelines") if len(pipes) > 1 else []
-        dtypes = sorted(deals_all["Type"].dropna().unique()) if "Type" in deals_all else []
-        sel_types = st.multiselect("Deal type", dtypes, placeholder="All deal types",
-                                   help="Pick 'New Business' to learn who becomes a NEW customer — expansion deals "
-                                        "with existing clients win far more often and can inflate the picture.") if dtypes else []
+        type_c = "Type" if "Type" in deals_all else None
+        has_new = bool(type_c) and deals_all[type_c].astype(str).str.contains("new", case=False).any()
+        new_only = st.toggle("New customers only", value=has_new, disabled=not has_new,
+                             help="On: only deals to win NEW customers — what an ICP is about. Deals with existing clients "
+                                  "(upsell/renewal) win far more often and would inflate every number.")
         stages = sorted(deals_all["Stage"].dropna().unique()) if "Stage" in deals_all else []
         junkish = [s for s in stages if any(w in s.lower() for w in ("junk", "spam", "duplicate", "test"))]
         skip_stages = st.multiselect("Leave out stages", stages, default=junkish,
@@ -112,8 +114,8 @@ if sel_pipes:
     mask &= deals_all["Pipeline"].isin(sel_pipes)
 if skip_stages:
     mask &= ~deals_all["Stage"].isin(skip_stages)
-if sel_types:
-    mask &= deals_all["Type"].isin(sel_types)
+if new_only:
+    mask &= deals_all["Type"].astype(str).str.contains("new", case=False)
 deals = deals_all[mask]
 wide = D["deal_wide"][D["deal_wide"]["deal_id"].isin(deals["Id"])]
 sig = run_scan(wide, D["feature_catalog"], min_n)
@@ -124,11 +126,13 @@ usable = fields[fields["strength"] != "Leakage suspected"] if not fields.empty e
 
 with head_l:
     st.markdown(f"<div class='hero-title'>{org.get('company_name', 'CRM')}</div>"
-                f"<div class='hero-sub'>{sig['closed']:,} closed deals analyzed · average win rate {pct(base)}</div>",
+                f"<div class='hero-sub'>{sig['closed']:,} closed deals{' to new customers' if new_only else ''} · "
+                f"average win rate {pct(base)}</div>",
                 unsafe_allow_html=True)
 
-SECTIONS = ["Overview", "Signals", "Segments", "Revenue", "Pipeline", "Leads", "Buyers", "Sales motion", "Data quality"]
-section = st.segmented_control("Section", SECTIONS, default="Overview", key="section", label_visibility="collapsed") or "Overview"
+SECTIONS = ["Summary", "Best customers", "Lead sources", "Pipeline", "Sales process", "Buyers", "All fields", "Data quality"]
+section = st.segmented_control("Section", SECTIONS, default="Summary", key="section", label_visibility="collapsed") or "Summary"
+answers = run_answers(wide, sig, min_n)
 
 if sig["closed"] < 30:
     st.warning(f"Only {sig['closed']} closed deals in this selection. Treat patterns as hypotheses.")
@@ -141,206 +145,194 @@ def group_values(feature: str, frame: pd.DataFrame) -> pd.Series:
     return s.astype("object").fillna("(blank)").astype(str)
 
 
-# ================================================================== OVERVIEW
-if section == "Overview":
+# ================================================================== SUMMARY
+if section == "Summary":
     cyc = f"{ov['median_cycle_won']:.0f} days" if pd.notna(ov["median_cycle_won"]) else "—"
     ui.kpis([
-        ("Win rate", pct(ov["win_rate"]), f"{ov['won']:,} won · {ov['lost']:,} lost"),
-        ("Won revenue", money(ov["won_revenue"]), f"{ov['deals']:,} deals total"),
-        ("Average deal", money(ov["avg_won_deal"]), f"median {money(ov['median_won_deal'])}"),
-        ("Sales cycle", cyc, "median for won deals"),
-        ("Open pipeline", money(ov["open_pipeline"]), f"{ov['open']:,} open deals"),
+        ("Win rate", pct(ov["win_rate"]), f"{ov['won']:,} won of {ov['won'] + ov['lost']:,} closed"),
+        ("Won revenue", money(ov["won_revenue"]), f"{ov['won']:,} customers won"),
+        ("Average won deal", money(ov["avg_won_deal"]), f"typical: {money(ov['median_won_deal'])}"),
+        ("Time to close", cyc, "typical won deal"),
+        ("Open pipeline", money(ov["open_pipeline"]), f"{ov['open']:,} deals still open"),
     ])
-
-    with card("What moves the win rate",
-              "Customer and deal traits that win confidently more (green) or less (red) than average. Hover for sample sizes."):
-        ui.lift_chart(A.top_moves(sig, limit=12, per_field=2), base)
-
-    draft = A.icp_draft(sig)
+    concl = IN.conclusions(answers, base, money)
     c1, c2 = st.columns(2)
     with c1:
-        with card("Ideal customer", "Traits with a win rate confidently above average."):
-            ui.chips(draft[draft["verdict"].str.contains("Target")] if not draft.empty else draft, "good")
+        with card("Focus on", "Customer types that win clearly more often than your average — or bring much more money per deal."):
+            ui.conclusion_list(concl["focus"], "good", "No customer type stands out yet.")
     with c2:
-        with card("Deprioritize", "Traits with a win rate confidently below average."):
-            ui.chips(draft[draft["verdict"].str.contains("Avoid")] if not draft.empty else draft, "bad")
+        with card("Deprioritize", "Customer types that win clearly less often than average. Spend less sales time here."):
+            ui.conclusion_list(concl["avoid"], "bad", "No customer type is clearly weak.")
 
-    c1, c2 = st.columns(2)
-    with c1:
-        with card("Strongest signals", "How strongly each customer or deal field separates won from lost deals."):
-            top = usable[usable["strength"].isin(["Strong", "Moderate", "Weak"]) & (usable["source"] != "Activity")].head(10).sort_values("effect")
-            if top.empty:
-                ui.empty()
-            else:
-                fig = go.Figure(go.Bar(x=top["effect"], y=top["label"], orientation="h",
-                                       marker_color=[ui.SOURCE.get(s, ui.MUTED) for s in top["source"]],
-                                       hovertemplate="%{y}<br>Effect size %{x:.2f}<extra></extra>"))
-                fig.update_layout(xaxis=dict(title="Effect size", range=[0, max(0.3, top["effect"].max() * 1.15)]),
-                                  yaxis=dict(showgrid=False))
-                plot(fig, max(260, 30 * len(top) + 60))
-                note("Blue: company · Purple: contact · Teal: deal")
-    with c2:
-        with card("Momentum", "Deals created and won each month."):
-            mt = A.monthly_trend(deals)
-            fig = go.Figure()
-            fig.add_scatter(x=mt["month"], y=mt["created"], name="Created", mode="lines", line=dict(color=ui.MUTED, width=2),
-                            fill="tozeroy", fillcolor="rgba(210,210,215,.25)")
-            fig.add_scatter(x=mt["month"], y=mt["won"], name="Won", mode="lines", line=dict(color=ui.GREEN, width=2.5),
-                            fill="tozeroy", fillcolor="rgba(52,199,89,.12)")
-            fig.update_layout(hovermode="x unified")
-            plot(fig, 330)
+    with card("Your ideal customer, at a glance", "For each question, the groups to target (green) and to avoid (red). "
+              "Open “Best customers” for the full picture behind each line."):
+        rows = []
+        for key, a in answers.items():
+            cardf = a["card"]
+            good = cardf[cardf["verdict"] == "Focus"].sort_values("rate", ascending=False)
+            bad = cardf[cardf["verdict"] == "Deprioritize"].sort_values("rate")
+            if good.empty and bad.empty:
+                continue
+            chips = "".join(f"<span class='chip good'><b>{r.label}</b><span class='r'>{r.rate:.0%}</span></span>" for r in good.itertuples())
+            chips += "".join(f"<span class='chip bad'><b>{r.label}</b><span class='r'>{r.rate:.0%}</span></span>" for r in bad.itertuples())
+            rows.append(f"<div class='icp-row'><div class='k'>{a['question'].name}</div><div class='chips'>{chips}</div></div>")
+        st.markdown("".join(rows) or "<p class='card-sub'>Not enough data yet.</p>", unsafe_allow_html=True)
+        note("Percent = how often deals from that group are won. Only groups with enough deals and a clear difference are shown.")
 
-    leaks = fields[fields["strength"] == "Leakage suspected"] if not fields.empty else fields
-    if len(leaks):
-        note(f"{len(leaks)} field(s) excluded because they are only filled after a deal closes: "
-             + ", ".join(leaks["label"]) + ".")
+    if concl["fix"]:
+        with card("Make these answers stronger", "Missing CRM data limits how sure the analysis can be."):
+            ui.conclusion_list(concl["fix"], "fix", "")
 
-# ================================================================== SIGNALS
-elif section == "Signals":
-    with card("Every field, ranked", f"{len(usable)} fields tested against {sig['closed']:,} closed deals. "
-              "Longer bar = stronger separation between won and lost. Faded = not statistically reliable. "
-              "Team (who sold it), Process (how far the deal moved) and Time fields are shown for context "
-              "but never used for the ICP."):
-        if usable.empty:
+# ================================================================== BEST CUSTOMERS
+elif section == "Best customers":
+    if not answers:
+        ui.empty("Not enough data to compare customer types.")
+    else:
+        names = {a["question"].name: k for k, a in answers.items()}
+        pick = st.pills("Question", list(names), default=list(names)[0], label_visibility="collapsed") or list(names)[0]
+        a = answers[names[pick]]
+        alts = a["alternatives"]
+        if len(alts) > 1:
+            labels = [f"{r.label} ({r.coverage:.0%} filled)" for r in alts.itertuples()]
+            choice = st.selectbox("CRM field used", labels, index=0,
+                                  help="Several CRM fields can answer the same question. The best-filled one is picked by default.")
+            chosen = alts.iloc[labels.index(choice)]["feature"]
+            if chosen != a["feature"]:
+                a = IN.answer(a["question"], sig, wide, min_n, feature=chosen) or a
+        cardf = a["card"]
+        q = a["question"]
+        good = cardf[cardf["verdict"] == "Focus"].sort_values("rate", ascending=False)
+        bad = cardf[cardf["verdict"] == "Deprioritize"].sort_values("rate")
+        parts = []
+        if len(good):
+            parts.append("Best: " + ", ".join(f"<b>{r.label}</b> ({r.rate:.0%})" for r in good.head(3).itertuples()))
+        if len(bad):
+            parts.append("Weakest: " + ", ".join(f"<b>{r.label}</b> ({r.rate:.0%})" for r in bad.head(3).itertuples()))
+        main = cardf[~cardf["value"].isin(["(blank)", "Other (rare values)"])]
+        with card(q.question, f"Based on the CRM field “{a['label']}”, recorded on {a['coverage']:.0%} of closed deals. "
+                  f"Average win rate: {base:.0%}."):
+            st.markdown(f"<p class='takeaway'>{' · '.join(parts) or 'No group is clearly better or worse than average.'}</p>",
+                        unsafe_allow_html=True)
+            natural_order = main["value"].map(range_key).notna().all()
+            ui.verdict_bars(order_values(main) if natural_order else main.sort_values("rate", ascending=False), base)
+            note("Green = focus · Grey = about average · Red = deprioritize. The thin line shows how sure we are "
+                 "(shorter = more certain).")
+
+        c1, c2 = st.columns([3, 2])
+        with c1:
+            with card("How often vs how much", "Right = wins more often. Higher = bigger deals. Top-right groups are the most valuable. "
+                      "Bubble size = number of deals."):
+                m = main[main["n"] >= min_n].dropna(subset=["avg_deal"])
+                if m.empty:
+                    ui.empty("No deal values recorded.")
+                else:
+                    fig = go.Figure(go.Scatter(
+                        x=m["rate"], y=m["avg_deal"], mode="markers+text", text=m["label"], textposition="top center",
+                        textfont=dict(size=11, color=ui.INK_2),
+                        marker=dict(size=np.sqrt(m["n"]) * 4 + 6, color=[ui.VERDICT.get(v, ui.MUTED) for v in m["verdict"]],
+                                    opacity=.6, line=dict(width=0)),
+                        customdata=m[["n", "days_to_close"]].values,
+                        hovertemplate="<b>%{text}</b><br>Win rate %{x:.0%}<br>Typical deal %{y:,.0f}<br>%{customdata[0]} deals · "
+                                      "%{customdata[1]:.0f} days to close<extra></extra>"))
+                    fig.add_vline(x=base, line_width=1, line_dash="dot", line_color=ui.INK_3)
+                    fig.update_layout(xaxis=dict(tickformat=".0%", title="Win rate", showgrid=True, gridcolor="#F0F0F3"),
+                                      yaxis=dict(title="Typical won deal"))
+                    plot(fig, 400)
+        with c2:
+            with card("Where the revenue comes from", "Share of all won revenue from each group."):
+                r2 = main[main["revenue"] > 0].sort_values("revenue").tail(10)
+                if r2.empty:
+                    ui.empty()
+                else:
+                    fig = go.Figure(go.Bar(x=r2["revenue"], y=r2["label"], orientation="h", marker_color=ui.BLUE,
+                                           text=[f"{x:.0%}" for x in r2["revenue_share"]], textposition="outside",
+                                           cliponaxis=False, textfont=dict(color=ui.INK_2),
+                                           hovertemplate="%{y}<br>%{x:,.0f}<extra></extra>"))
+                    fig.update_layout(yaxis=dict(showgrid=False), xaxis=dict(showticklabels=False))
+                    plot(fig, 400)
+
+        with card("The full scorecard", "Value per opportunity = win rate × typical won deal: what one new deal of this type is "
+                  "worth on average, before you know whether it closes. It combines how often and how much."):
+            view = cardf[["label", "n", "rate", "avg_deal", "value_per_opp", "days_to_close", "revenue_share", "verdict"]]
+            st.dataframe(view.sort_values("value_per_opp", ascending=False), hide_index=True, use_container_width=True, column_config={
+                "label": "Group", "n": "Closed deals", "rate": st.column_config.NumberColumn("Win rate", format="percent"),
+                "avg_deal": st.column_config.NumberColumn("Typical won deal", format="%.0f"),
+                "value_per_opp": st.column_config.NumberColumn("Value per opportunity", format="%.0f"),
+                "days_to_close": st.column_config.NumberColumn("Days to close", format="%.0f"),
+                "revenue_share": st.column_config.NumberColumn("Share of revenue", format="percent"), "verdict": "Verdict"})
+
+        if len(answers) >= 2:
+            with card("Two questions together", "Win rate for each combination — e.g. which industries win within each company size. "
+                      f"Blank cells have fewer than {min_n} deals."):
+                qn = [answers[k]["question"].name for k in answers]
+                c1, c2 = st.columns(2)
+                qa = c1.selectbox("Rows", qn, index=0)
+                qb = c2.selectbox("Columns", qn, index=1)
+                fa, fb = answers[names[qa]], answers[names[qb]]
+                closed = wide[wide["outcome"].isin(["Won", "Lost"])]
+                ga, gb = group_values(fa["feature"], closed), group_values(fb["feature"], closed)
+                sub = pd.DataFrame({"a": ga, "b": gb, "y": closed["is_won"]})
+                sub = sub[(sub["a"] != "(blank)") & (sub["b"] != "(blank)")]
+                sub = sub[sub["a"].isin(sub["a"].value_counts().head(10).index) & sub["b"].isin(sub["b"].value_counts().head(8).index)]
+                if sub.empty or sub["a"].nunique() < 2 or sub["b"].nunique() < 2:
+                    ui.empty("Not enough overlap between these two.")
+                else:
+                    piv = sub.pivot_table(index="a", columns="b", values="y", aggfunc=["mean", "count"])
+                    rate, cnt = piv["mean"], piv["count"]
+
+                    def natural(labels):
+                        return sorted(labels, key=range_key) if all(range_key(l) is not None for l in labels) else list(labels)
+                    rate = rate.loc[natural(rate.index), natural(rate.columns)]
+                    cnt = cnt.loc[rate.index, rate.columns]
+                    shown = rate.where(cnt >= min_n)
+                    txt = shown.map(lambda v: "" if pd.isna(v) else f"{v:.0%}")
+                    fig = go.Figure(go.Heatmap(z=shown.values, x=[str(c) for c in shown.columns], y=[str(i) for i in shown.index],
+                                               text=txt.values, texttemplate="%{text}", textfont=dict(size=12),
+                                               colorscale=ui.DIVERGING, zmid=base, zmin=0, zmax=1, xgap=3, ygap=3,
+                                               customdata=cnt.values, showscale=False,
+                                               hovertemplate="%{y} × %{x}<br>Win rate %{z:.0%}<br>%{customdata} deals<extra></extra>"))
+                    fig.update_layout(xaxis=dict(side="top", showgrid=False), yaxis=dict(showgrid=False, autorange="reversed"))
+                    plot(fig, max(320, 44 * len(shown) + 80))
+
+# ================================================================== ALL FIELDS
+elif section == "All fields":
+    shown_f = usable[usable["source"].isin(["Account", "Contact", "Deal"])]
+    other_f = usable[~usable["source"].isin(["Account", "Contact", "Deal"])]
+    with card("Every customer field, ranked by how much it matters",
+              f"For explorers: all {len(shown_f)} customer and deal fields in the CRM, tested against {sig['closed']:,} closed deals. "
+              "A longer bar means winners and losers look more different on that field. Dark blue = clear pattern, "
+              "light = weak, grey = no real pattern."):
+        if shown_f.empty:
             ui.empty()
         else:
-            u = usable.iloc[::-1]
+            u = shown_f.iloc[::-1]
             fig = go.Figure(go.Bar(
                 x=u["effect"], y=u["label"], orientation="h",
                 marker_color=[ui.STRENGTH.get(s, ui.MUTED) for s in u["strength"]],
-                customdata=np.stack([u["strength"], u["q_value"].fillna(1), u["coverage"]], axis=1),
-                hovertemplate="<b>%{y}</b><br>Effect %{x:.2f} · %{customdata[0]}<br>q-value %{customdata[1]:.3f}"
-                              "<br>Filled %{customdata[2]:.0%}<extra></extra>"))
-            fig.update_layout(xaxis=dict(title="Effect size (0 = none, 1 = perfect)"), yaxis=dict(showgrid=False))
+                customdata=np.stack([u["strength"], u["coverage"]], axis=1),
+                hovertemplate="<b>%{y}</b><br>%{customdata[0]} pattern<br>Filled on %{customdata[1]:.0%} of deals<extra></extra>"))
+            fig.update_layout(xaxis=dict(title="How much it matters", showticklabels=False), yaxis=dict(showgrid=False))
             plot(fig, max(320, 26 * len(u) + 60))
-
-    with card("Look inside a field", "Win rate for each value. The thin line is the 95% confidence range."):
+    with card("Look inside any field", "Win rate for each value. Green = clearly better than average, red = clearly worse."):
         if not usable.empty:
             pick = st.selectbox("Field", usable["label"].tolist(), label_visibility="collapsed")
             feat = usable.loc[usable["label"] == pick, "feature"].iloc[0]
             t = sig["values"][sig["values"]["feature"] == feat]
             ui.rate_bars(order_values(t), base)
             with st.expander("Show numbers"):
-                st.dataframe(t[["value", "n", "won", "rate", "ci_lo", "ci_hi", "lift", "confidence"]], hide_index=True,
-                             use_container_width=True, column_config={
-                                 "value": "Value", "n": "Deals", "won": "Won",
-                                 "rate": st.column_config.NumberColumn("Win rate", format="percent"),
-                                 "ci_lo": st.column_config.NumberColumn("Low", format="percent"),
-                                 "ci_hi": st.column_config.NumberColumn("High", format="percent"),
-                                 "lift": st.column_config.NumberColumn("Lift", format="%.2f×"), "confidence": "Confidence"})
-
-    with st.expander("Excluded fields"):
+                st.dataframe(t[["value", "n", "won", "rate", "confidence"]], hide_index=True, use_container_width=True,
+                             column_config={"value": "Value", "n": "Deals", "won": "Won",
+                                            "rate": st.column_config.NumberColumn("Win rate", format="percent"),
+                                            "confidence": "How sure"})
+    with st.expander("Fields kept out of the ICP (sales team, deal progress, time) and why"):
+        if len(other_f):
+            st.dataframe(other_f[["label", "source"]].rename(columns={"label": "Field", "source": "Group"}),
+                         hide_index=True, use_container_width=True)
         leaks = fields[fields["strength"] == "Leakage suspected"] if not fields.empty else fields
         if len(leaks):
+            st.markdown("**Filled only after a deal is decided** — these would falsely “predict” the outcome:")
             st.dataframe(leaks[["label", "leakage"]].rename(columns={"label": "Field", "leakage": "Why excluded"}),
                          hide_index=True, use_container_width=True)
-        if not sig["skipped"].empty:
-            st.dataframe(sig["skipped"][["label", "reason"]].rename(columns={"label": "Field", "reason": "Not testable"}),
-                         hide_index=True, use_container_width=True)
-
-# ================================================================== SEGMENTS
-elif section == "Segments":
-    inc_act = st.toggle("Include sales activity", value=False, help="Off: only who the customer is. On: also how the deal was worked.")
-    srcs = ("Account", "Contact", "Deal", "Activity") if inc_act else ("Account", "Contact", "Deal")
-    dr = run_drivers(wide, fields, srcs)
-    with card("Winning combinations", "Groups of deals that share traits, found by a shallow decision tree. "
-              "Each group holds at least 3% of deals, so none is a fluke."):
-        if dr["rules"].empty:
-            ui.empty("Not enough closed deals or signals to form segments.")
-        else:
-            ui.segments(dr["rules"], base)
-            if pd.notna(dr["auc"]):
-                strength = "strong" if dr["auc"] >= .8 else ("useful" if dr["auc"] >= .7 else ("modest" if dr["auc"] >= .6 else "weak"))
-                note(f"Predictive power (cross-validated AUC): {dr['auc']:.2f} — {strength}. 0.5 is a coin flip.")
-
-    with card("Two traits together", f"Win rate for every combination. Blank cells have fewer than {min_n} deals."):
-        opts = pd.concat([usable[usable["source"] != "Activity"], usable[usable["source"] == "Activity"]])["label"].tolist()
-        if len(opts) >= 2:
-            c1, c2 = st.columns(2)
-            fa = c1.selectbox("Rows", opts, index=0)
-            fb = c2.selectbox("Columns", opts, index=1)
-            ka = usable.loc[usable["label"] == fa, "feature"].iloc[0]
-            kb = usable.loc[usable["label"] == fb, "feature"].iloc[0]
-            closed = wide[wide["outcome"].isin(["Won", "Lost"])]
-            ga, gb = group_values(ka, closed), group_values(kb, closed)
-            sub = pd.DataFrame({"a": ga, "b": gb, "y": closed["is_won"]})
-            sub = sub[sub["a"].isin(ga.value_counts().head(10).index) & sub["b"].isin(gb.value_counts().head(8).index)]
-            piv = sub.pivot_table(index="a", columns="b", values="y", aggfunc=["mean", "count"])
-            rate, cnt = piv["mean"], piv["count"]
-
-            def natural(labels):
-                return sorted(labels, key=range_key) if all(range_key(l) is not None for l in labels) else list(labels)
-            rate = rate.loc[natural(rate.index), natural(rate.columns)]
-            cnt = cnt.loc[rate.index, rate.columns]
-            shown = rate.where(cnt >= min_n)
-            txt = shown.map(lambda v: "" if pd.isna(v) else f"{v:.0%}")
-            fig = go.Figure(go.Heatmap(z=shown.values, x=[str(c) for c in shown.columns], y=[str(i) for i in shown.index],
-                                       text=txt.values, texttemplate="%{text}", textfont=dict(size=12),
-                                       colorscale=ui.DIVERGING, zmid=base, zmin=0, zmax=1, xgap=3, ygap=3,
-                                       customdata=cnt.values, showscale=False,
-                                       hovertemplate="%{y} × %{x}<br>Win rate %{z:.0%}<br>%{customdata} deals<extra></extra>"))
-            fig.update_layout(xaxis=dict(side="top", showgrid=False), yaxis=dict(showgrid=False, autorange="reversed"))
-            plot(fig, max(320, 44 * len(shown) + 80))
-
-# ================================================================== REVENUE
-elif section == "Revenue":
-    seg_opts = usable[usable["source"].isin(["Account", "Contact", "Deal"])]
-    if seg_opts.empty:
-        ui.empty()
-    else:
-        pick = st.selectbox("Break down by", seg_opts["label"].tolist())
-        feat = seg_opts.loc[seg_opts["label"] == pick, "feature"].iloc[0]
-        w2 = wide.copy()
-        w2[feat] = group_values(feat, w2)
-        sv = A.segment_value(w2, feat)
-        sv = sv[(sv["n"] >= min_n) & (sv["value"] != "(blank)")]
-        c1, c2 = st.columns([3, 2])
-        with c1:
-            with card("Win rate × deal size", "Top-right is the sweet spot: wins often and pays well. Bubble size = number of deals."):
-                fig = go.Figure(go.Scatter(
-                    x=sv["rate"], y=sv["avg_won_deal"], mode="markers+text", text=sv["value"], textposition="top center",
-                    textfont=dict(size=11, color=ui.INK_2),
-                    marker=dict(size=np.sqrt(sv["n"]) * 4 + 6, color=ui.BLUE, opacity=.55, line=dict(width=0)),
-                    customdata=sv[["n", "won_revenue"]].values,
-                    hovertemplate="<b>%{text}</b><br>Win rate %{x:.0%}<br>Avg deal %{y:,.0f}<br>%{customdata[0]} deals<extra></extra>"))
-                fig.add_vline(x=base, line_width=1, line_dash="dot", line_color=ui.INK_3)
-                fig.update_layout(xaxis=dict(tickformat=".0%", title="Win rate", showgrid=True, gridcolor="#F0F0F3"),
-                                  yaxis=dict(title="Average won deal"))
-                plot(fig, 420)
-        with c2:
-            with card("Share of won revenue", pick):
-                s2 = sv.sort_values("won_revenue", ascending=True).tail(10)
-                fig = go.Figure(go.Bar(x=s2["won_revenue"], y=s2["value"], orientation="h", marker_color=ui.BLUE,
-                                       text=[f"{x:.0%}" for x in s2["revenue_share"]], textposition="outside",
-                                       cliponaxis=False, textfont=dict(color=ui.INK_2),
-                                       hovertemplate="%{y}<br>%{x:,.0f}<extra></extra>"))
-                fig.update_layout(yaxis=dict(showgrid=False), xaxis=dict(showticklabels=False))
-                plot(fig, 420)
-
-    c1, c2 = st.columns(2)
-    closed = deals[deals["outcome"].isin(["Won", "Lost"])]
-    with c1:
-        with card("Sales cycle", "Days from created to closed."):
-            fig = go.Figure()
-            for name, color in (("Lost", ui.RED), ("Won", ui.GREEN)):
-                fig.add_histogram(x=closed.loc[closed["outcome"] == name, "cycle_days"], name=name, marker_color=color,
-                                  opacity=.55, nbinsx=35)
-            fig.update_layout(barmode="overlay", bargap=.05, xaxis_title="Days")
-            plot(fig, 320)
-    with c2:
-        with card("Revenue concentration", "Share of won revenue from the largest customers."):
-            rc = A.revenue_concentration(deals, D["clean_accounts"])
-            if rc.empty:
-                ui.empty()
-            else:
-                fig = go.Figure(go.Scatter(x=rc["account_pct"], y=rc["cum_share"], mode="lines", line=dict(color=ui.BLUE, width=2.5),
-                                           fill="tozeroy", fillcolor="rgba(0,113,227,.08)",
-                                           hovertemplate="Top %{x:.0%} of customers → %{y:.0%} of revenue<extra></extra>"))
-                fig.update_layout(xaxis=dict(tickformat=".0%", title="Customers, largest first"), yaxis=dict(tickformat=".0%"))
-                plot(fig, 320)
-                top20 = rc.loc[rc["account_pct"] <= .2, "cum_share"].max()
-                if pd.notna(top20):
-                    note(f"The top 20% of customers bring {top20:.0%} of won revenue.")
 
 # ================================================================== PIPELINE
 elif section == "Pipeline":
@@ -396,9 +388,40 @@ elif section == "Pipeline":
         with card("Win rate by competitor recorded"):
             ui.rate_bars(order_values(la["competitors"]), base)
 
+    c1, c2 = st.columns(2)
+    closed = deals[deals["outcome"].isin(["Won", "Lost"])]
+    with c1:
+        with card("How long deals take", "Days from created to closed. Green = won, red = lost."):
+            fig = go.Figure()
+            for name, color in (("Lost", ui.RED), ("Won", ui.GREEN)):
+                fig.add_histogram(x=closed.loc[closed["outcome"] == name, "cycle_days"], name=name, marker_color=color,
+                                  opacity=.55, nbinsx=35)
+            fig.update_layout(barmode="overlay", bargap=.05, xaxis_title="Days")
+            plot(fig, 320)
+    with c2:
+        with card("How concentrated revenue is", "Share of won revenue coming from the biggest customers."):
+            rc = A.revenue_concentration(deals, D["clean_accounts"])
+            if rc.empty:
+                ui.empty()
+            else:
+                fig = go.Figure(go.Scatter(x=rc["account_pct"], y=rc["cum_share"], mode="lines", line=dict(color=ui.BLUE, width=2.5),
+                                           fill="tozeroy", fillcolor="rgba(0,113,227,.08)",
+                                           hovertemplate="Top %{x:.0%} of customers → %{y:.0%} of revenue<extra></extra>"))
+                fig.update_layout(xaxis=dict(tickformat=".0%", title="Customers, biggest first"), yaxis=dict(tickformat=".0%"))
+                plot(fig, 320)
+                top20 = rc.loc[rc["account_pct"] <= .2, "cum_share"].max()
+                if pd.notna(top20):
+                    note(f"The biggest 20% of customers bring {top20:.0%} of all won revenue.")
+
 # ================================================================== LEADS
-elif section == "Leads":
+elif section == "Lead sources":
     leads = D["clean_leads"]
+    if "source" in answers:
+        a = answers["source"]
+        with card("Which lead sources turn into customers", f"Win rate of deals by where they came from (field “{a['label']}”). "
+                  f"Average: {base:.0%}. Green = focus, red = deprioritize."):
+            main = a["card"][~a["card"]["value"].isin(["(blank)", "Other (rare values)"])].sort_values("rate", ascending=False)
+            ui.verdict_bars(main, base)
     s2r = A.source_to_revenue(leads, deals)
     if not s2r.empty:
         with card("Lead sources", "Each source by lead conversion and deal win rate. Bubble size = won revenue."):
@@ -455,7 +478,7 @@ elif section == "Buyers":
             plot(fig, max(300, 32 * len(tt) + 60))
 
 # ================================================================== SALES MOTION
-elif section == "Sales motion":
+elif section == "Sales process":
     cmp = A.activity_compare(deals)
     if not cmp.empty and {"Won", "Lost"} <= set(cmp.columns):
         items = []

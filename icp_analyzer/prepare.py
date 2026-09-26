@@ -213,6 +213,17 @@ def classify_title(title) -> tuple[str, str]:
     return func, sen
 
 
+def best_title_col(df: pd.DataFrame) -> str | None:
+    """The job-title column that is actually filled (CRMs often leave 'Title' empty and use a custom field)."""
+    rx = re.compile(r"(title|designation|position|job|role)", re.I)
+    cands = [c for c in df.columns if rx.search(c) and not re.search(r"(department|role_id|layout)", c, re.I)]
+    if not cands:
+        return None
+    filled = {c: blank_nulls(df[c]).notna().mean() for c in cands}
+    best = max(filled, key=filled.get)
+    return best if filled[best] > 0 else None
+
+
 # ---------------------------------------------------------------- outcome
 def stage_outcomes(store: Store, stages: pd.Series) -> dict[str, str]:
     pick = store.read("meta_picklist")
@@ -273,7 +284,9 @@ def prepare(store: Store, log=print) -> None:
     # ----- contacts
     con, con_kinds = load("Contacts")
     if not con.empty:
-        title_c = col(con, "Title", "Designation", "Job_Title")
+        title_c = best_title_col(con)
+        if title_c:
+            con[title_c] = blank_nulls(con[title_c])
         fs = con[title_c].map(classify_title) if title_c else pd.Series([("Unknown", "Unknown")] * len(con))
         con["function"] = [f for f, _ in fs]
         con["seniority"] = [s for _, s in fs]
@@ -330,7 +343,8 @@ def prepare(store: Store, log=print) -> None:
             deals["amount"] = np.where(rate > 0, deals["amount"] / rate, deals["amount"])
     else:
         deals["amount"] = np.nan
-    deals["amount_band"] = nice_quartile_bands(deals["amount"])
+    # 0 / empty amount usually means "not entered yet" (reps add it later in the sale), not a real deal size
+    deals["amount_band"] = nice_quartile_bands(deals["amount"].where(deals["amount"] > 0))
     deals["created_quarter"] = deals["created"].dt.to_period("Q").astype(str).replace("NaT", pd.NA)
     deals["created_month"] = deals["created"].dt.to_period("M").astype(str).replace("NaT", pd.NA)
 
@@ -375,8 +389,9 @@ def prepare(store: Store, log=print) -> None:
         leads["converted"] = conv.astype(int)
         emp_c = col(leads, "No_of_Employees", "Employees")
         leads["employee_band"] = band(leads[emp_c], EMP_EDGES, EMP_LABELS) if emp_c else np.nan
-        title_c = col(leads, "Designation", "Title")
+        title_c = best_title_col(leads)
         if title_c:
+            leads[title_c] = blank_nulls(leads[title_c])
             fs = leads[title_c].map(classify_title)
             leads["function"], leads["seniority"] = [f for f, _ in fs], [s for _, s in fs]
     store.write("clean_leads", leads)
@@ -426,8 +441,8 @@ def prepare(store: Store, log=print) -> None:
     if ct_c and not con.empty:
         con_idx = con.set_index("Id")
         for c, label in (("function", "Contact · Function"), ("seniority", "Contact · Seniority")):
-            add(f"contact.{c}", deals[ct_c].map(con_idx[c]), "Contact", "category", label)
-        title_c = col(con, "Title", "Designation")
+            add(f"contact.{c}", deals[ct_c].map(con_idx[c]).replace({"Unknown": np.nan}), "Contact", "category", label)
+        title_c = best_title_col(con)
         if title_c:
             add("contact.title", deals[ct_c].map(con_idx[title_c]), "Contact", "text", "Contact · Title")
 
