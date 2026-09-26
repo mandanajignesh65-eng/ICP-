@@ -131,6 +131,7 @@ class Cleaner:
     def clean(self, module: str, df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
         df = df.copy()
         df.columns = [c[:-3] if c.endswith(".id") else c for c in df.columns]
+        df = df.loc[:, ~pd.Index(df.columns).duplicated(keep="last")]  # "X" and "X.id" collapse to one column
         kinds = {}
         for c in df.columns:
             k = self.kind(module, c, df[c])
@@ -249,6 +250,56 @@ def stage_outcomes(store: Store, stages: pd.Series) -> dict[str, str]:
     return mapping
 
 
+# ---------------------------------------------------------------- activities → deals
+def link_activities(acts: pd.DataFrame, deals: pd.DataFrame, raw_leads: pd.DataFrame,
+                    acc_c: str | None, con_c: str | None) -> tuple[pd.DataFrame, dict]:
+    """Attach every call/meeting/task to the deal it belongs to.
+
+    Reps log activities on the deal, but also on the account, the contact, or the lead before it became a deal.
+    - on the deal: direct
+    - on the account / contact: to that account's / contact's deals, if it happened while the deal was open
+      (from 30 days before the deal was created up to its close)
+    - on a lead: to the deal the lead was converted into (these are the touches before the deal existed)
+    """
+    d = deals[["Id", "created", "closed_on", "outcome"]].rename(columns={"Id": "deal_id"})
+    end = d["closed_on"].where(d["outcome"] != "Open", pd.Timestamp.now()) + pd.Timedelta(days=1)
+    d = d.assign(win_start=d["created"] - pd.Timedelta(days=30), win_end=end)
+    a = acts.dropna(subset=["related_id"])
+    parts, counts = [], {}
+    acts = acts.copy()
+
+    direct = a[a["related_id"].isin(d["deal_id"])].merge(d, left_on="related_id", right_on="deal_id")
+    parts.append(direct.assign(link="deal"))
+    counts["deal"] = len(direct)
+
+    if acc_c:  # logged on the account (What_Id = account)
+        sub = a[a["related_module"].astype(str).str.lower() == "accounts"]
+        m = sub.merge(d.assign(_k=deals[acc_c].values), left_on="related_id", right_on="_k").drop(columns="_k")
+        m = m[m["when"].between(m["win_start"], m["win_end"])]
+        parts.append(m.assign(link="account"))
+        counts["account"] = len(m)
+    if con_c:  # logged on the contact (Who_Id = contact); converted leads' activities also end up here
+        sub = acts.dropna(subset=["contact_id"])
+        m = sub.merge(d.assign(_k=deals[con_c].values), left_on="contact_id", right_on="_k").drop(columns="_k")
+        m = m[m["when"].between(m["win_start"], m["win_end"])]
+        parts.append(m.assign(link="contact"))
+        counts["contact"] = len(m)
+
+    conv = col(raw_leads, "Converted_Deal") if not raw_leads.empty else None
+    if conv:
+        lead_deal = raw_leads[[col(raw_leads, "Id"), conv]].dropna()
+        lead_deal.columns = ["lead_id", "conv_deal"]
+        sub = a[a["related_module"].astype(str).str.lower() == "leads"]
+        m = sub.merge(lead_deal, left_on="related_id", right_on="lead_id").merge(d, left_on="conv_deal", right_on="deal_id")
+        m = m[m["when"].isna() | (m["when"] <= m["win_end"])]
+        parts.append(m.drop(columns=["lead_id", "conv_deal"]).assign(link="lead"))
+        counts["lead"] = len(m)
+
+    out = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=["deal_id", "activity_id", "type", "when"])
+    out = out.drop_duplicates(["deal_id", "activity_id"])
+    return out, counts
+
+
 # ---------------------------------------------------------------- main
 def prepare(store: Store, log=print) -> None:
     cl = Cleaner(store)
@@ -349,15 +400,15 @@ def prepare(store: Store, log=print) -> None:
     deals["created_month"] = deals["created"].dt.to_period("M").astype(str).replace("NaT", pd.NA)
 
     # activities per deal, counting only activities up to the close date (no leakage from post-sale work)
-    deal_acts = activities[activities["related_id"].isin(deals["Id"])].merge(
-        deals[["Id", "created", "closed_on", "outcome"]], left_on="related_id", right_on="Id", how="left")
+    deal_acts, link_counts = link_activities(activities, deals, store.read("raw_Leads"),
+                                             col(deals, "Account_Name"), col(deals, "Contact_Name"))
     before = deal_acts["outcome"].eq("Open") | deal_acts["when"].isna() | (deal_acts["when"] <= deal_acts["closed_on"] + pd.Timedelta(days=1))
     excluded_after_close = int((~before).sum())
     deal_acts = deal_acts[before]
-    agg = deal_acts.pivot_table(index="related_id", columns="type", values="activity_id", aggfunc="count", fill_value=0)
+    agg = deal_acts.pivot_table(index="deal_id", columns="type", values="activity_id", aggfunc="count", fill_value=0)
     agg.columns = [f"n_{c.lower()}s" for c in agg.columns]
     agg["n_activities"] = agg.sum(axis=1)
-    first = deal_acts.groupby("related_id")["when"].min()
+    first = deal_acts.groupby("deal_id")["when"].min()
     deals = deals.merge(agg, left_on="Id", right_index=True, how="left")
     for c in ("n_calls", "n_meetings", "n_tasks", "n_activities"):
         if c not in deals:
@@ -378,8 +429,16 @@ def prepare(store: Store, log=print) -> None:
 
     store.write("clean_deals", deals)
 
-    # ----- leads
+    # ----- leads (+ converted leads, which Zoho's bulk export leaves out)
     leads, _ = load("Leads")
+    conv_raw = store.read("raw_Leads_Converted")
+    if not conv_raw.empty:
+        conv, _ = cl.clean("Leads", conv_raw)
+        if "Owner" in conv.columns:
+            conv["Owner_Name"] = conv["Owner"].map(user_names).fillna(conv["Owner"])
+        conv["Converted__s"] = "true"
+        known = set(leads["Id"]) if not leads.empty else set()
+        leads = pd.concat([leads, conv[~conv["Id"].isin(known)]], ignore_index=True)
     if not leads.empty:
         conv_c = col(leads, "Converted__s", "$converted", "Converted")
         status_c = col(leads, "Lead_Status")
@@ -463,6 +522,8 @@ def prepare(store: Store, log=print) -> None:
     store.write("feature_catalog", pd.DataFrame(catalog))
     store.write("cleaning_log", pd.DataFrame(cl.log_rows, columns=["module", "field", "original", "cleaned", "records"]))
     store.write("prepare_info", pd.DataFrame([{"activities_excluded_after_close": excluded_after_close,
+                                               **{f"activities_via_{k}": v for k, v in link_counts.items()},
+                                               "activities_total": len(activities),
                                                "deals": len(deals), "closed_deals": int(closed.sum())}]))
     log(f"Prepared: {len(deals):,} deals ({int(closed.sum()):,} closed), {len(catalog)} candidate signals, "
         f"{len(cl.log_rows)} value fixes, {excluded_after_close} post-close activities excluded")

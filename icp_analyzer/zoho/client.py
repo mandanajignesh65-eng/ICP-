@@ -122,10 +122,10 @@ class ZohoClient:
             return None
 
     # ---------- REST records (for modules Bulk Read does not support, e.g. Notes) ----------
-    def records(self, module: str, fields: list[str], max_records: int | None = None) -> pd.DataFrame:
+    def records(self, module: str, fields: list[str], max_records: int | None = None, **extra) -> pd.DataFrame:
         rows, token, page = [], None, 1
         while True:
-            params = {"fields": ",".join(fields[:50]), "per_page": 200}
+            params = {"fields": ",".join(fields[:50]), "per_page": 200, **extra}
             if token:
                 params["page_token"] = token
             else:

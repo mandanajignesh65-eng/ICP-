@@ -105,6 +105,9 @@ def extract(client: ZohoClient, store: Store, modules: list[str] | None = None,
             log(f"  ! {name} failed: {e}")
             log_rows.append({"module": name, "rows": 0, "columns": 0, "method": "bulk", "error": str(e)[:300]})
 
+    if bulk and (not modules or "Leads" in modules):
+        log_rows.append(_converted_leads(client, store, log))
+
     if notes:
         try:
             df = client.records("Notes", NOTE_FIELDS)
@@ -119,7 +122,34 @@ def extract(client: ZohoClient, store: Store, modules: list[str] | None = None,
 
     log_df = pd.DataFrame(log_rows)
     log_df["extracted_at"] = datetime.now(timezone.utc).isoformat()
+    prev = store.read("meta_extract_log")  # keep entries of modules not re-extracted in this run
+    if not prev.empty and not log_df.empty:
+        log_df = pd.concat([prev[~prev["module"].isin(log_df["module"])], log_df], ignore_index=True)
     store.write("meta_extract_log", log_df)
+
+
+CONVERTED_LEAD_FIELDS = ["Company", "Last_Name", "Lead_Source", "Industry", "No_of_Employees", "Country", "City", "State",
+                         "Designation", "Contact_Designation", "Lead_Status", "Created_Time", "Converted_Date_Time",
+                         "Converted_Deal", "Converted_Account", "Converted_Contact", "Owner", "Annual_Revenue", "Email"]
+
+
+def _converted_leads(client: ZohoClient, store: Store, log) -> dict:
+    """Bulk Read skips leads that were converted into deals — exactly the leads needed to measure conversion.
+    Fetch them through the REST API (converted=true)."""
+    meta = store.read("meta_fields")
+    known = set(meta.loc[meta["module"] == "Leads", "api_name"]) if not meta.empty else set(CONVERTED_LEAD_FIELDS)
+    fields = [f for f in CONVERTED_LEAD_FIELDS if f in known] or CONVERTED_LEAD_FIELDS[:10]
+    try:
+        df = client.records("Leads", fields, converted="true")
+    except ZohoError as e:
+        log(f"  ! converted leads failed: {e}")
+        return {"module": "Leads (converted)", "rows": 0, "columns": 0, "method": "rest", "error": str(e)[:300]}
+    if not df.empty:
+        df = df.rename(columns={"id": "Id"})
+        df = df[[c for c in df.columns if not c.endswith((".name", ".email"))]].astype(str).replace({"None": None, "nan": None})
+    store.write("raw_Leads_Converted", df)
+    log(f"  Leads (converted): {len(df):,} records")
+    return {"module": "Leads (converted)", "rows": len(df), "columns": df.shape[1], "method": "rest", "error": None}
 
 
 def _stage_history(client: ZohoClient, store: Store, max_history: int | None, log) -> dict:
