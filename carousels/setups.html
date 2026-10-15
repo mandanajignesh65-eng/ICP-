@@ -100,7 +100,7 @@ const S=[
     q:"Enable the Slack MCP, then paste a Slack bug thread into Claude and just say 'fix.' Zero context switching required.",c:"@bcherny, Claude Code team tips · 31 Jan 2026",why:"No jumping between Slack, the bug tracker and your editor. The bug comes to you."}],
   tldrTitle:"If you only steal 5:",
   tldr:["Run several sessions at once, tabs numbered","Add every mistake to a shared CLAUDE.md","Tag @.claude in PR reviews to teach it","Give it a way to check its own work","Paste Slack threads into Claude instead of switching tabs"],
-  zero:"Pasting Slack into Claude fixes half the problem.",zline:"The other half is Slack pulling you out of your work every few minutes. That's why we built Zero. Someone pings you, Zero turns it into a task and finds time for it on your calendar, so you can finish what you're doing first."},
+  zero:"Pasting Slack into Claude fixes half the problem.",zline:"The other half is Slack pulling you out of your work. Zero has a Slack app for that. Say \"I'll review the PR today\" and it books 30 minutes for it on your calendar. While you're in deep work, it sets your Slack status, and when you're back it can sum up the long threads you missed."},
  {id:"mitchell",who:"Mitchell Hashimoto",role:"co-founder of HashiCorp, creator of Ghostty",src:"blog, \"My AI Adoption Journey\", 5 Feb 2026",
   hook:["The HashiCorp co-founder","shared how he","<span class='hl'>really</span> uses AI."],
   sub:"No hype. Just 3 habits from a guy who's been shipping for 20 years.",
@@ -165,7 +165,7 @@ function slides(s){
   <p style="font-family:var(--mono);font-size:11px;color:#ffd270;margin:0">our pick, not ${s.id==="cassidy"?"hers":"his"}</p>
   <h2 class="h2" style="margin-top:10px;color:#f5f2ea">${s.zero}</h2>
   <p class="p" style="margin-top:10px;color:#d4d0f1;font-size:14px">${s.zline}</p>
-  <div style="margin-top:14px">${W("calendar",`<div class="cal"><div class="r"><span class="t">09:45</span><span class="ev s">"can you check this?" → task</span></div><div class="r"><span class="t">10–12</span><span class="ev d">Deep work · protected</span></div></div>`)}</div>
+  <div style="margin-top:14px">${W("calendar",`<div class="cal"><div class="r"><span class="t">10–12</span><span class="ev d">Deep work · Slack status: focusing 🎧</span></div><div class="r"><span class="t">2:00</span><span class="ev s">"I'll review the PR today" → 30 min</span></div></div>`)}</div>
   <div style="margin-top:14px"><span class="zbtn">Try Zero, it's free →</span></div>
   <p class="disc" style="margin-top:auto">${s.who} is not affiliated with Zero and does not endorse it. Tools and quotes are from their public ${s.src.split(",")[0]} (${s.src}). Zero is our own product.</p>`,"zero"));
  return a.join("");
