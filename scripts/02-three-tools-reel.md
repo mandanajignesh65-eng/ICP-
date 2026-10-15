@@ -10,18 +10,18 @@
 
 | Voiceover | On screen (memes + clips) |
 |---|---|
-| Okay so, there are three tools I think every developer should know. They'll honestly save you a lot of time. | "Wait, it's all free?" / "Always has been" astronaut meme |
+| Okay so, there are three tools I think every developer should know. They'll honestly save you a lot of time. | "Developers when someone says it saves time" — dog with ears up / Surprised Pikachu |
 | First one is Excalidraw. | Excalidraw logo, quick zoom-in |
-| You know when you join a new project and you have no idea how anything works? | Jethalal confused face / "Ye kya ho raha hai" meme |
+| You know when you join a new project and you have no idea how anything works? | Charlie Day conspiracy board meme ("Me explaining the codebase to the new guy") |
 | Just open Excalidraw and draw it out. The services, the APIs, the database, how data moves around. | Fast-forward clip of someone drawing boxes and arrows |
-| Once you see the whole picture, the code suddenly makes sense. | "Galaxy brain" meme / light-bulb moment |
+| Once you see the whole picture, the code suddenly makes sense. | "Visible confusion" Obi-Wan meme → then "It all makes sense now" Galaxy brain |
 | Second one is Bruno. | Bruno logo |
 | If you test APIs, try this. It's free, works offline, and your requests stay right inside your project. | Clip of sending a request in Bruno, "200 OK" zoom |
-| So no more "bhai, collection bhej de" every single day. | Sigma face / "Ab maza aayega na bidu" meme |
+| So no more "bhai, collection bhej de" every single day. | Drake meme: ❌ "Sending the Postman collection on WhatsApp" ✅ "git pull" |
 | And the third one, ZeroAI. | ZeroAI logo |
 | If your whole day goes in Slack messages and meetings… | "This is fine" dog in a burning room, Slack notification sounds |
 | ZeroAI turns those messages into tasks and blocks time on your calendar, so you actually get to code. | Clip: Slack message → task → calendar "Deep Work" block |
-| Finally, some peace. | Monk/zen meme, or "Sukoon" text with calm music for 2 seconds |
+| Finally, some peace. | "It's not much, but it's honest work" farmer meme, calm lofi for 2 seconds |
 | Save this, you'll need it later. | "Save" button tap animation |
 
 ---
@@ -29,7 +29,7 @@
 ## Tips for the edit
 
 - Change the meme every 2–3 seconds. Keep it fast.
-- Use popular Indian dev memes (Hera Pheri, Jethalal, Mirzapur) plus classic global ones (This is fine, Drake, Galaxy brain).
+- Use well-known dev memes: Charlie conspiracy board, Drake, This is fine, Surprised Pikachu, "It works on my machine", honest work farmer. Pull fresh ones from r/ProgrammerHumor.
 - Add Slack ping sounds in the ZeroAI part.
 - Subtitles on screen for every line.
 
