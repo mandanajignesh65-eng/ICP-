@@ -100,18 +100,19 @@ const S=[
   tldr:["Use a terminal you actually enjoy","Give AI agents more than one try","Block the last 30 min for agents, notifications off"],
   zero:"He blocks his time by hand. If you want those blocks booked for you, try Zero.",zline:"It finds free time in your week, books deep work blocks, and turns Slack asks into tasks."},
  {id:"kent",who:"Kent C. Dodds",role:"ex-PayPal engineer, JavaScript educator",src:"kentcdodds.com/uses, checked Oct 2026",
-  hook:["Kent C. Dodds","shared the tools he","uses <span class='hl'>every day</span>."],
-  sub:"From his public /uses page. 3 picks you can set up today.",
+  hook:["No hype.","Just the 3 tools","Kent C. Dodds <span class='hl'>actually</span> uses."],
+  sub:"Straight from his public /uses page. Nothing sponsored, nothing fancy. Just stuff that works.",
   file:"~/kentcdodds/uses",
   t:[
-   {n:"01",name:"Cursor",logo:"⌘",term:`<span class="m">$</span> cursor .<br><span class="v">›</span> tab, tab, tab<br><span class="g">✓ feature done</span>`,
-    q:"Cursor - My preferred editor.",c:"kentcdodds.com/uses",why:"An AI-first editor. If you live in VS Code, the switch takes 5 minutes."},
-   {n:"02",name:"Raycast + Wispr Flow",logo:"raycast",term:`<span class="v">⌥ space</span> → open anything<br><span class="v">fn</span> → speak instead of type<br><span class="g">fewer clicks, faster notes</span>`,
-    q:"Raycast… Wispr Flow - Voice to text (AI)",c:"kentcdodds.com/uses",why:"A launcher for everything, plus voice typing for long messages and prompts."},
-   {n:"03",name:"Notion Calendar",logo:"notion",term:`<span class="m">mon</span> <span class="y">10–12 focus</span><br><span class="m">tue</span> <span class="y">10–12 focus</span><br><span class="g">availability shared</span>`,
-    q:"Notion Calendar - My calendar app and it allows me to share my availability with specific blocks of time.",c:"kentcdodds.com/uses",why:"He decides when he's available. Meetings don't decide for him."}],
-  tldr:["Try an AI-first editor for a week","Use a launcher and voice typing to save clicks","Share availability in blocks, not your whole day"],
-  zero:"Like the Notion Calendar idea? Another option to try is Zero.",zline:"It works on Google Calendar and books focus blocks from your Slack, Jira and Linear asks."},
+   {n:"01",name:"Cursor",logo:"⌘",term:`<span class="m">$</span> cursor .<br><span class="v">cmd+k</span> → "add error handling here"<br><span class="g">✓ done, you review it</span>`,
+    q:"Cursor - My preferred editor.",c:"kentcdodds.com/uses",why:"Honestly, it's VS Code with AI built in. Your extensions and shortcuts come with you, so trying it costs you nothing. Use it on one real task this week."},
+   {n:"02",name:"Raycast + Wispr Flow",logo:"raycast",term:`<span class="v">⌥ space</span> → open apps, files, snippets<br><span class="v">fn</span> → talk, it types for you<br><span class="g">less clicking around</span>`,
+    q:"Raycast… Wispr Flow - Voice to text (AI)",c:"kentcdodds.com/uses",why:"Raycast is one shortcut for everything, so your hands stay on the keyboard. Wispr Flow is for long stuff, like prompts and PR descriptions. Talking is just faster."},
+   {n:"03",name:"Notion Calendar",logo:"notion",term:`<span class="m">mon</span> <span class="y">10–12 coding, not bookable</span><br><span class="m">mon</span> 3–4 open for calls<br><span class="g">you pick the slots</span>`,
+    q:"Notion Calendar - My calendar app and it allows me to share my availability with specific blocks of time.",c:"kentcdodds.com/uses",why:"The real trick isn't the app. Share only the slots you choose, so nobody books your best coding hours."}],
+  tldrTitle:"No hype. Just this:",
+  tldr:["Use an editor with AI built in, and test it on real work","Keep your hands on the keyboard: launcher + voice typing","Decide your free slots before someone else does"],
+  zero:"Same idea, less effort.",zline:"Zero looks at your Google Calendar, finds free time and books focus blocks for you. Slack and Jira asks turn into tasks, not interruptions. It's a free Chrome extension. Try it for a week and see."},
  {id:"cassidy",who:"Cassidy Williams",role:"developer & writer (cassidoo)",src:"cassidoo.co, \"Productivity apps I use in 2024\"",
   hook:["Cassidy Williams","shared the 3 apps that","keep her <span class='hl'>focused</span>."],
   sub:"From her yearly productivity post. Simple, and it works.",
@@ -141,7 +142,7 @@ function slides(s){
   <div class="why"><b>WHY →</b><span>${t.why}</span></div>`)));
  a.push(fr(s,5,`
   <p class="tag" style="align-self:flex-start">tl;dr, save this</p>
-  <h2 class="h2" style="margin-top:12px">${s.who.split(" ")[0]}'s setup in 3 lines</h2>
+  <h2 class="h2" style="margin-top:12px">${s.tldrTitle||s.who.split(" ")[0]+"'s setup in 3 lines"}</h2>
   <div class="win" style="margin-top:16px;padding:6px 14px">${s.tldr.map(x=>`<div class="check"><span class="box">✓</span><span>${x}</span></div>`).join("")}</div>
   <p class="p muted" style="margin-top:auto;font-size:13px">Which one are you trying first? Tell us in the comments.</p>`));
  a.push(fr(s,6,`
