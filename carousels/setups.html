@@ -95,10 +95,12 @@ const S=[
    {name:"Auto-format with a hook",logo:"🪝",term:`<span class="m">PostToolUse:</span><br>bun run format || true<br><span class="g">✓ CI stays green</span>`,
     q:"We use a PostToolUse hook to format Claude's code… the hook handles the last 10% to avoid formatting errors in CI later.",c:"@bcherny · 2 Jan 2026",why:"Never fail CI because of a missing comma again."},
             {name:"Let it check its own work",logo:"✅",term:`<span class="m">change →</span> test in browser<br><span class="m">fail →</span> fix → test again<br><span class="g">2–3x better result</span>`,
-    q:"give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result.",c:"@bcherny · 2 Jan 2026 (his most important tip)",why:"Tests, a browser, anything. If it can check itself, it fixes itself."}],
+    q:"give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result.",c:"@bcherny · 2 Jan 2026 (his most important tip)",why:"Tests, a browser, anything. If it can check itself, it fixes itself."},
+   {name:"Bring Slack to Claude",logo:"slack",term:`<span class="m">#bugs</span> "checkout fails on safari"<br><span class="v">›</span> <span class="y">paste the thread</span> → "fix"<br><span class="g">✓ PR opened</span>`,
+    q:"Enable the Slack MCP, then paste a Slack bug thread into Claude and just say 'fix.' Zero context switching required.",c:"@bcherny, Claude Code team tips · 31 Jan 2026",why:"No jumping between Slack, the bug tracker and your editor. The bug comes to you."}],
   tldrTitle:"If you only steal 5:",
-  tldr:["Run several sessions at once, tabs numbered","Add every mistake to a shared CLAUDE.md","Tag @.claude in PR reviews to teach it","Auto-format with a hook so CI never fails on style","Give it a way to check its own work"],
-  zero:"He lets Claude deal with Slack. If Slack keeps pulling <i>you</i> out of focus, try Zero.",zline:"It turns Slack, Jira and Linear asks into tasks and books focus time on your Google Calendar. Free Chrome extension, no hype, just try it for a week."},
+  tldr:["Run several sessions at once, tabs numbered","Add every mistake to a shared CLAUDE.md","Tag @.claude in PR reviews to teach it","Give it a way to check its own work","Paste Slack threads into Claude instead of switching tabs"],
+  zero:"Pasting Slack into Claude fixes half the problem.",zline:"The other half is Slack pulling you out of your work every few minutes. That's why we built Zero. Someone pings you, Zero turns it into a task and finds time for it on your calendar, so you can finish what you're doing first."},
  {id:"mitchell",who:"Mitchell Hashimoto",role:"co-founder of HashiCorp, creator of Ghostty",src:"blog, \"My AI Adoption Journey\", 5 Feb 2026",
   hook:["The HashiCorp co-founder","shared how he","<span class='hl'>really</span> uses AI."],
   sub:"No hype. Just 3 habits from a guy who's been shipping for 20 years.",
@@ -164,7 +166,7 @@ function slides(s){
   <h2 class="h2" style="margin-top:10px;color:#f5f2ea">${s.zero}</h2>
   <p class="p" style="margin-top:10px;color:#d4d0f1;font-size:14px">${s.zline}</p>
   <div style="margin-top:14px">${W("calendar",`<div class="cal"><div class="r"><span class="t">09:45</span><span class="ev s">"can you check this?" → task</span></div><div class="r"><span class="t">10–12</span><span class="ev d">Deep work · protected</span></div></div>`)}</div>
-  <div style="margin-top:14px"><span class="zbtn">Try Zero free →</span></div>
+  <div style="margin-top:14px"><span class="zbtn">Try Zero, it's free →</span></div>
   <p class="disc" style="margin-top:auto">${s.who} is not affiliated with Zero and does not endorse it. Tools and quotes are from their public ${s.src.split(",")[0]} (${s.src}). Zero is our own product.</p>`,"zero"));
  return a.join("");
 }
