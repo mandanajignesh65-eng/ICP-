@@ -1,0 +1,157 @@
+<title>Dev Setup Reveals</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: light "paper desk" slides with macOS window cards; 6 slides per carousel at 4:5 (432x540, exported 1080x1350) */
+:root{
+  --paper:#f4f1ea; --paper2:#ebe6db; --ink:#16131f; --muted:#6a6478; --line:#d9d2c3;
+  --violet:#6b4ce8; --violet-soft:#e9e3ff; --sun:#ffd270; --green:#27a35a; --red:#e5534b;
+  --page-bg:#ece9f5; --page-fg:#1b1532; --page-muted:#5e5878;
+  --display:"Instrument Sans",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page-bg:#0b0718;--page-fg:#ece9f5;--page-muted:#a39cc0;color-scheme:dark}}
+:root[data-theme="dark"]{--page-bg:#0b0718;--page-fg:#ece9f5;--page-muted:#a39cc0;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--page-bg);color:var(--page-fg);font-family:var(--display);margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+header h1{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 6px}
+header p{margin:0;color:var(--page-muted);max-width:70ch}
+.set{display:grid;gap:12px}
+.set > h2{margin:0;font-size:1.2rem}
+.strip{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px}
+.slide{flex:0 0 auto;width:432px;height:540px;position:relative;overflow:hidden;border-radius:4px;background:var(--paper);color:var(--ink);
+  background-image:linear-gradient(var(--paper2) 1px,transparent 1px),linear-gradient(90deg,var(--paper2) 1px,transparent 1px);background-size:24px 24px}
+.slide.zero{background:#100a21;color:#f5f2ea;background-image:none}
+.head{position:absolute;top:18px;left:22px;right:22px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.zero .head{color:#a790ff}
+.foot{position:absolute;bottom:14px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:12px;color:var(--ink)}
+.zero .brand{color:#f5f2ea}
+.brand i{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#a790ff,#6b4ce8);display:block}
+.body{position:absolute;top:44px;left:22px;right:22px;bottom:40px;display:flex;flex-direction:column}
+.win{background:#fff;border:1.5px solid var(--ink);border-radius:10px;box-shadow:5px 5px 0 var(--ink);overflow:hidden}
+.zero .win{border-color:#a790ff;box-shadow:5px 5px 0 #6b4ce8;background:#181429}
+.bar{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1.5px solid var(--ink);background:var(--paper2);font-family:var(--mono);font-size:10px;color:var(--muted)}
+.zero .bar{background:#1f163d;border-color:#a790ff;color:#a790ff}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.term{background:#16131f;color:#e8e4f4;font-family:var(--mono);font-size:12px;line-height:1.65;padding:12px 14px}
+.term .g{color:#7ee2a8}.term .y{color:#ffd270}.term .m{color:#8d86a3}.term .v{color:#b9a6ff}
+.h1{font-size:40px;line-height:1.04;font-weight:700;letter-spacing:-.025em;margin:0}
+.h2{font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.015em;margin:0}
+.p{font-size:15px;line-height:1.45;margin:0}
+.muted{color:var(--muted)}
+.hl{background:var(--sun);padding:0 4px}
+.num{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--violet)}
+.q{font-size:16.5px;line-height:1.42;font-weight:600;margin:0;padding:12px 14px}
+.cite{font-family:var(--mono);font-size:9.5px;color:var(--muted);padding:0 14px 12px}
+.why{display:flex;gap:10px;align-items:flex-start;margin-top:auto;background:var(--violet-soft);border:1.5px solid var(--violet);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.4}
+.why b{font-family:var(--mono);font-size:10px;color:var(--violet);white-space:nowrap;margin-top:3px}
+.logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#fff;border:1.5px solid var(--ink);flex:0 0 auto}
+.logo svg{width:20px;height:20px}
+.logo.t{font-size:18px}
+.toolrow{display:flex;align-items:center;gap:10px}
+.check{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding:10px 0;border-top:1.5px dashed var(--line);font-size:16px;line-height:1.35}
+.check:first-child{border-top:0}
+.box{width:18px;height:18px;border:2px solid var(--ink);border-radius:4px;margin-top:2px;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--green)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:4px}
+.zbtn{display:inline-flex;background:#ffd270;color:#100a21;font-weight:700;border-radius:999px;padding:9px 15px;font-size:13.5px}
+.cal{font-family:var(--display);font-size:12px}
+.cal .r{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;padding:5px 10px;border-top:1px dashed #3a3060}
+.cal .r:first-child{border-top:0}
+.cal .t{font-family:var(--mono);font-size:10px;color:#8d86a3}
+.ev{border-radius:6px;padding:5px 8px;font-weight:600}
+.ev.s{background:#fdecd3;color:#7a4b00}.ev.d{background:#6b4ce8;color:#fff}
+.disc{font-family:var(--mono);font-size:8.3px;line-height:1.45;color:rgba(236,233,245,.72)}
+</style>
+<main class="wrap">
+<header><h1>Dev setup reveals</h1><p>Four carousels, 6 slides each, in a light "dev desk" style. Real public quotes with dates, 3 things to steal, then Zero as our own pick on the last slide. No faces, no company logos.</p></header>
+<div id="sets"></div>
+</main>
+<script>
+const IC={"raycast": {"path": "M6.004 15.492v2.504L0 11.992l1.258-1.249Zm2.504 2.504H6.004L12.008 24l1.253-1.253zm14.24-4.747L24 11.997 12.003 0 10.75 1.251 15.491 6h-2.865L9.317 2.692 8.065 3.944l2.06 2.06H8.691v9.31H18v-1.432l2.06 2.06 1.252-1.252-3.312-3.32V8.506ZM6.63 5.372 5.38 6.625l1.342 1.343 1.251-1.253Zm10.655 10.655-1.247 1.251 1.342 1.343 1.253-1.251zM3.944 8.059 2.692 9.31l3.312 3.314v-2.506zm9.936 9.937h-2.504l3.314 3.312 1.25-1.252z", "hex": "FF6363", "label": "Raycast"}, "obsidian": {"path": "M19.355 18.538a68.967 68.959 0 0 0 1.858-2.954.81.81 0 0 0-.062-.9c-.516-.685-1.504-2.075-2.042-3.362-.553-1.321-.636-3.375-.64-4.377a1.707 1.707 0 0 0-.358-1.05l-3.198-4.064a3.744 3.744 0 0 1-.076.543c-.106.503-.307 1.004-.536 1.5-.134.29-.29.6-.446.914l-.31.626c-.516 1.068-.997 2.227-1.132 3.59-.124 1.26.046 2.73.815 4.481.128.011.257.025.386.044a6.363 6.363 0 0 1 3.326 1.505c.916.79 1.744 1.922 2.415 3.5zM8.199 22.569c.073.012.146.02.22.02.78.024 2.095.092 3.16.29.87.16 2.593.64 4.01 1.055 1.083.316 2.198-.548 2.355-1.664.114-.814.33-1.735.725-2.58l-.01.005c-.67-1.87-1.522-3.078-2.416-3.849a5.295 5.295 0 0 0-2.778-1.257c-1.54-.216-2.952.19-3.84.45.532 2.218.368 4.829-1.425 7.531zM5.533 9.938c-.023.1-.056.197-.098.29L2.82 16.059a1.602 1.602 0 0 0 .313 1.772l4.116 4.24c2.103-3.101 1.796-6.02.836-8.3-.728-1.73-1.832-3.081-2.55-3.831zM9.32 14.01c.615-.183 1.606-.465 2.745-.534-.683-1.725-.848-3.233-.716-4.577.154-1.552.7-2.847 1.235-3.95.113-.235.223-.454.328-.664.149-.297.288-.577.419-.86.217-.47.379-.885.46-1.27.08-.38.08-.72-.014-1.043-.095-.325-.297-.675-.68-1.06a1.6 1.6 0 0 0-1.475.36l-4.95 4.452a1.602 1.602 0 0 0-.513.952l-.427 2.83c.672.59 2.328 2.316 3.335 4.711.09.21.175.43.253.653z", "hex": "7C3AED", "label": "Obsidian"}, "claude": {"path": "m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z", "hex": "D97757", "label": "Claude"}, "notion": {"path": "M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z", "hex": "000000", "label": "Notion"}, "slack": {"path": "M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z", "hex": "4A154B", "label": "Slack"}, "googlecalendar": {"path": "M18.316 5.684H24v12.632h-5.684V5.684zM5.684 24h12.632v-5.684H5.684V24zM18.316 5.684V0H1.895A1.894 1.894 0 0 0 0 1.895v16.421h5.684V5.684h12.632zm-7.207 6.25v-.065c.272-.144.5-.349.687-.617s.279-.595.279-.982c0-.379-.099-.72-.3-1.025a2.05 2.05 0 0 0-.832-.714 2.703 2.703 0 0 0-1.197-.257c-.6 0-1.094.156-1.481.467-.386.311-.65.671-.793 1.078l1.085.452c.086-.249.224-.461.413-.633.189-.172.445-.257.767-.257.33 0 .602.088.816.264a.86.86 0 0 1 .322.703c0 .33-.12.589-.36.778-.24.19-.535.284-.886.284h-.567v1.085h.633c.407 0 .748.109 1.02.327.272.218.407.499.407.843 0 .336-.129.614-.387.832s-.565.327-.924.327c-.351 0-.651-.103-.897-.311-.248-.208-.422-.502-.521-.881l-1.096.452c.178.616.505 1.082.977 1.401.472.319.984.478 1.538.477a2.84 2.84 0 0 0 1.293-.291c.382-.193.684-.458.902-.794.218-.336.327-.72.327-1.149 0-.429-.115-.797-.344-1.105a2.067 2.067 0 0 0-.881-.689zm2.093-1.931l.602.913L15 10.045v5.744h1.187V8.446h-.827l-2.158 1.557zM22.105 0h-3.289v5.184H24V1.895A1.894 1.894 0 0 0 22.105 0zm-3.289 23.5l4.684-4.684h-4.684V23.5zM0 22.105C0 23.152.848 24 1.895 24h3.289v-5.184H0v3.289z", "hex": "4285F4", "label": "Google Calendar"}, "github": {"path": "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12", "hex": "181717", "label": "GitHub"}, "anthropic": {"path": "M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z", "hex": "191919", "label": "Anthropic"}};
+const W=(title,inner)=>`<div class="win"><div class="bar"><span class="dot" style="background:#e5534b"></span><span class="dot" style="background:#e0b73e"></span><span class="dot" style="background:#27a35a"></span><span style="margin-left:6px">${title}</span></div>${inner}</div>`;
+const L=t=>IC[t]?`<span class="logo"><svg viewBox="0 0 24 24"><path d="${IC[t].path}" fill="#${IC[t].hex}"/></svg></span>`:`<span class="logo t">${t}</span>`;
+const S=[
+ {id:"boris",who:"Boris Cherny",role:"creator & head of Claude Code, Anthropic",src:"X thread, 2 Jan 2026 · 8.2M views",
+  hook:["The guy who built","<span class='hl'>Claude Code</span>","shared his setup."],
+  sub:"He called it \"surprisingly vanilla\". Here are the 3 parts worth copying.",
+  file:"~/boris/setup.md",
+  t:[
+   {n:"01",name:"Plan mode first",logo:"claude",term:`<span class="m">$</span> claude<br><span class="v">›</span> shift+tab <span class="y">×2</span><br><span class="g">⏸ plan mode on</span>`,
+    q:"Most sessions start in Plan mode (shift+tab twice)… A good plan is really important!",c:"@bcherny · 2 Jan 2026",why:"Agree on the plan, then let it write the code in one go."},
+   {n:"02",name:"One shared CLAUDE.md",logo:"github",term:`<span class="m"># CLAUDE.md</span><br>- use bun, not npm<br>- never edit generated files<br><span class="g">+ added after today's PR</span>`,
+    q:"Anytime we see Claude do something incorrectly we add it to the CLAUDE.md, so Claude knows not to do it next time.",c:"@bcherny · 2 Jan 2026",why:"Every mistake happens only once. The file gets smarter every week."},
+   {n:"03",name:"Bring Slack to the agent",logo:"slack",term:`<span class="m">#bugs</span> "checkout fails on safari"<br><span class="v">›</span> <span class="y">paste thread</span> → "fix"<br><span class="g">✓ PR opened</span>`,
+    q:"Enable the Slack MCP, then paste a Slack bug thread into Claude and just say 'fix.' Zero context switching required.",c:"@bcherny, Claude Code team tips · 31 Jan 2026",why:"Don't jump between tabs. Bring the work to where you already are."}],
+  tldr:["Start every big task in plan mode","Keep a shared CLAUDE.md and add every mistake","Stop context switching between Slack and code"],
+  zero:"He pulls Slack into his agent. If your problem is Slack pulling <i>you</i> away, try Zero.",zline:"It turns Slack, Jira and Linear asks into tasks and books focus time on your Google Calendar."},
+ {id:"mitchell",who:"Mitchell Hashimoto",role:"co-founder of HashiCorp, creator of Ghostty",src:"blog, \"My AI Adoption Journey\", 5 Feb 2026",
+  hook:["The HashiCorp co-founder","shared how he","<span class='hl'>really</span> uses AI."],
+  sub:"No hype. Just 3 habits from a guy who's been shipping for 20 years.",
+  file:"~/mitchellh/workflow.md",
+  t:[
+   {n:"01",name:"Ghostty terminal",logo:"👻",term:`<span class="m">$</span> ghostty<br><span class="v">›</span> cmd+shift+p<br><span class="g">command palette ready</span>`,
+    q:"The command palette that ships for macOS in Ghostty…",c:"mitchellh.com · 5 Feb 2026",why:"A fast, native terminal he built himself. Free and open source."},
+   {n:"02",name:"Claude Code (after a slow start)",logo:"claude",term:`<span class="m">$</span> claude<br><span class="m">week 1:</span> meh<br><span class="g">later: part of every day</span>`,
+    q:"The next phase on my journey I tried Claude Code. I'll cut to the chase: I initially wasn't impressed.",c:"mitchellh.com · 5 Feb 2026",why:"Even great engineers needed time before AI agents clicked. Keep going."},
+   {n:"03",name:"End-of-day agent block",logo:"⏰",term:`<span class="y">17:30–18:00</span> kick off agents<br><span class="m">notifications:</span> <span class="g">off</span><br><span class="m">tomorrow:</span> review results`,
+    q:"block out the last 30 minutes of every day to kick off one or more agents… turn off agent desktop notifications. Context switching is very expensive.",c:"mitchellh.com · 5 Feb 2026",why:"Agents work while you're away. Your focus isn't broken by pings."}],
+  tldr:["Use a terminal you actually enjoy","Give AI agents more than one try","Block the last 30 min for agents, notifications off"],
+  zero:"He blocks his time by hand. If you want those blocks booked for you, try Zero.",zline:"It finds free time in your week, books deep work blocks, and turns Slack asks into tasks."},
+ {id:"kent",who:"Kent C. Dodds",role:"ex-PayPal engineer, JavaScript educator",src:"kentcdodds.com/uses, checked Oct 2026",
+  hook:["Kent C. Dodds","shared the tools he","uses <span class='hl'>every day</span>."],
+  sub:"From his public /uses page. 3 picks you can set up today.",
+  file:"~/kentcdodds/uses",
+  t:[
+   {n:"01",name:"Cursor",logo:"⌘",term:`<span class="m">$</span> cursor .<br><span class="v">›</span> tab, tab, tab<br><span class="g">✓ feature done</span>`,
+    q:"Cursor - My preferred editor.",c:"kentcdodds.com/uses",why:"An AI-first editor. If you live in VS Code, the switch takes 5 minutes."},
+   {n:"02",name:"Raycast + Wispr Flow",logo:"raycast",term:`<span class="v">⌥ space</span> → open anything<br><span class="v">fn</span> → speak instead of type<br><span class="g">fewer clicks, faster notes</span>`,
+    q:"Raycast… Wispr Flow - Voice to text (AI)",c:"kentcdodds.com/uses",why:"A launcher for everything, plus voice typing for long messages and prompts."},
+   {n:"03",name:"Notion Calendar",logo:"notion",term:`<span class="m">mon</span> <span class="y">10–12 focus</span><br><span class="m">tue</span> <span class="y">10–12 focus</span><br><span class="g">availability shared</span>`,
+    q:"Notion Calendar - My calendar app and it allows me to share my availability with specific blocks of time.",c:"kentcdodds.com/uses",why:"He decides when he's available. Meetings don't decide for him."}],
+  tldr:["Try an AI-first editor for a week","Use a launcher and voice typing to save clicks","Share availability in blocks, not your whole day"],
+  zero:"Like the Notion Calendar idea? Another option to try is Zero.",zline:"It works on Google Calendar and books focus blocks from your Slack, Jira and Linear asks."},
+ {id:"cassidy",who:"Cassidy Williams",role:"developer & writer (cassidoo)",src:"cassidoo.co, \"Productivity apps I use in 2024\"",
+  hook:["Cassidy Williams","shared the 3 apps that","keep her <span class='hl'>focused</span>."],
+  sub:"From her yearly productivity post. Simple, and it works.",
+  file:"~/cassidoo/apps-2024.md",
+  t:[
+   {n:"01",name:"Obsidian",logo:"obsidian",term:`<span class="m">vault/</span><br>  daily/2024-07-01.md<br>  <span class="g">projects/</span>  ideas.md`,
+    q:"I'm alllllll in on Obsidian.",c:"cassidoo.co · 1 Jul 2024",why:"All your notes as local markdown files. Fast, free, yours."},
+   {n:"02",name:"Sukha (focus app)",logo:"🎧",term:`<span class="y">● focus session</span> 50:00<br><span class="m">task:</span> write the API docs<br><span class="g">✓ done</span>`,
+    q:"when I use Sukha, I get more work done, simply put… Sukha is a flow state to-do app.",c:"cassidoo.co · 1 Jul 2024",why:"One task, one timer, no tabs. That's the whole trick."},
+   {n:"03",name:"Notion Calendar",logo:"notion",term:`<span class="y">09:30</span> flow time<br><span class="y">13:00</span> one task only<br><span class="g">✓ followed</span>`,
+    q:"If something is scheduled on my calendar, whether it's flow time or dedicated time to one specific task, I follow it.",c:"cassidoo.co · 1 Jul 2024",why:"Put focus time on the calendar like a meeting, then actually show up."}],
+  tldr:["Keep notes in plain markdown","Work in focus sessions, one task at a time","Schedule flow time and treat it like a meeting"],
+  zero:"Her rule: if it's on the calendar, she follows it. Zero can put the focus time there for you.",zline:"It finds the gaps in your Google Calendar and books deep work blocks. Free Chrome extension."}
+];
+function fr(s,i,inner,cls=""){return `<section class="slide ${cls}" data-set="${s.id}" data-i="${i}"><div class="head"><span>${cls?"// our pick":"// "+s.file}</span><span>${i}/6</span></div><div class="body">${inner}</div><div class="foot"><span class="brand"><i></i>Zero</span><span>${i===1?"swipe →":(i<6?"source: "+s.src:"")}</span></div></section>`;}
+function slides(s){
+ const a=[];
+ a.push(fr(s,1,`
+  <p class="tag" style="align-self:flex-start">setup reveal</p>
+  <h2 class="h1" style="margin-top:14px">${s.hook.join("<br>")}</h2>
+  <p class="p muted" style="margin-top:12px">${s.sub}</p>
+  <div style="margin-top:auto">${W(s.file,`<div class="term"><span class="m">who:</span> ${s.who}<br><span class="m">role:</span> ${s.role}<br><span class="m">source:</span> ${s.src}<br><span class="g">3 things worth stealing →</span></div>`)}</div>`));
+ s.t.forEach((t,k)=>a.push(fr(s,k+2,`
+  <div class="toolrow">${L(t.logo)}<div><div class="num">${t.n} / 03</div><h2 class="h2">${t.name}</h2></div></div>
+  <div style="margin-top:12px">${W("terminal",`<div class="term">${t.term}</div>`)}</div>
+  <div class="win" style="margin-top:14px;box-shadow:3px 3px 0 var(--ink)"><p class="q">“${t.q}”</p><div class="cite">— ${s.who} · ${t.c}</div></div>
+  <div class="why"><b>WHY →</b><span>${t.why}</span></div>`)));
+ a.push(fr(s,5,`
+  <p class="tag" style="align-self:flex-start">tl;dr, save this</p>
+  <h2 class="h2" style="margin-top:12px">${s.who.split(" ")[0]}'s setup in 3 lines</h2>
+  <div class="win" style="margin-top:16px;padding:6px 14px">${s.tldr.map(x=>`<div class="check"><span class="box">✓</span><span>${x}</span></div>`).join("")}</div>
+  <p class="p muted" style="margin-top:auto;font-size:13px">Which one are you trying first? Tell us in the comments.</p>`));
+ a.push(fr(s,6,`
+  <p style="font-family:var(--mono);font-size:11px;color:#ffd270;margin:0">our pick, not ${s.id==="cassidy"?"hers":"his"}</p>
+  <h2 class="h2" style="margin-top:10px;color:#f5f2ea">${s.zero}</h2>
+  <p class="p" style="margin-top:10px;color:#d4d0f1;font-size:14px">${s.zline}</p>
+  <div style="margin-top:14px">${W("calendar",`<div class="cal"><div class="r"><span class="t">09:45</span><span class="ev s">"can you check this?" → task</span></div><div class="r"><span class="t">10–12</span><span class="ev d">Deep work · protected</span></div></div>`)}</div>
+  <div style="margin-top:14px"><span class="zbtn">Try Zero free →</span></div>
+  <p class="disc" style="margin-top:auto">${s.who} is not affiliated with Zero and does not endorse it. Tools and quotes are from their public ${s.src.split(",")[0]} (${s.src}). Zero is our own product.</p>`,"zero"));
+ return a.join("");
+}
+document.getElementById("sets").innerHTML=S.map((s,n)=>`<div class="set"><h2>${n+1}. ${s.who}</h2><div class="strip">${slides(s)}</div></div>`).join("");
+</script>
