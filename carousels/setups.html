@@ -146,7 +146,7 @@ function slides(s){
  a.push(fr(s,1,`
   <p class="tag" style="align-self:flex-start">setup reveal</p>
   <h2 class="h1" style="margin-top:14px;${s.tweet?"font-size:33px":""}">${s.hook.join("<br>")}</h2>
-  <p class="p muted" style="margin-top:10px;${s.tweet?"font-size:13.5px":""}">${s.tweet?"Skipping the obvious stuff. Just the "+s.t.length+" tips most devs aren't using yet →":s.sub}</p>
+  <p class="p muted" style="margin-top:10px;${s.tweet?"font-size:13.5px":""}">${s.tweet?"Here's what he actually does, in simple words →":s.sub}</p>
   ${s.tweet?`<img src="${s.tweet}" alt="Boris Cherny's original post on X" style="margin-top:auto;margin-bottom:8px;width:94%;align-self:center;border:1.5px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);transform:rotate(-1.2deg)">`:""}
   <div style="margin-top:auto;${s.tweet?"display:none":""}">${W(s.file,`<div class="term"><span class="m">who:</span> ${s.who}<br><span class="m">role:</span> ${s.role}<br><span class="m">source:</span> ${s.src}<br><span class="g">${s.t.length===3?"3 things worth stealing":"all "+s.t.length+" things, one per slide"} →</span></div>`)}</div>`));
  s.t.forEach((t,k)=>a.push(fr(s,k+2,`
