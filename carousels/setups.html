@@ -76,7 +76,7 @@ const W=(title,inner)=>`<div class="win"><div class="bar"><span class="dot" styl
 const L=t=>IC[t]?`<span class="logo"><svg viewBox="0 0 24 24"><path d="${IC[t].path}" fill="#${IC[t].hex}"/></svg></span>`:`<span class="logo t">${t}</span>`;
 const S=[
  {id:"boris",tweet:TWEET,who:"Boris Cherny",role:"creator & head of Claude Code, Anthropic",src:"X thread, 2 Jan 2026 · 8.2M views",
-  hook:["The guy who built","<span class='hl'>Claude Code</span>","shared his full setup."],
+  hook:["The guy who built","<span class='hl'>Claude Code</span>","shared his setup."],
   sub:"All 13 things. No secret prompts. He literally called it \"surprisingly vanilla\". Here it is in plain words.",
   file:"~/boris/setup.md",
   t:[
@@ -84,30 +84,20 @@ const S=[
     q:"I run 5 Claudes in parallel in my terminal. I number my tabs 1-5, and use system notifications to know when a Claude needs input.",c:"@bcherny · 2 Jan 2026",why:"While one is thinking, you're on another. Numbered tabs so you never lose track."},
    {name:"More on the web and phone",logo:"📱",term:`<span class="m">morning:</span> start 3 tasks from phone<br><span class="m">later:</span> check in on laptop<br><span class="g">nothing waits for you</span>`,
     q:"I also start a few sessions from my phone (from the Claude iOS app) every morning and throughout the day, and check in on them later.",c:"@bcherny · 2 Jan 2026",why:"Kick off work from anywhere, check results later. Your laptop isn't the only place work happens."},
-   {name:"Use the smartest model",logo:"🧠",term:`<span class="m">small model:</span> fast, needs fixing<br><span class="m">big model:</span> slower, gets it right<br><span class="g">big model wins overall</span>`,
-    q:"I use Opus 4.5 with thinking for everything… since you have to steer it less and it's better at tool use, it is almost always faster than using a smaller model in the end.",c:"@bcherny · 2 Jan 2026",why:"Less babysitting means less fixing. Model names change, the idea doesn't."},
-   {name:"One shared CLAUDE.md",logo:"github",term:`<span class="m"># CLAUDE.md</span><br>- use bun, not npm<br><span class="g">+ added after today's PR</span>`,
+      {name:"One shared CLAUDE.md",logo:"github",term:`<span class="m"># CLAUDE.md</span><br>- use bun, not npm<br><span class="g">+ added after today's PR</span>`,
     q:"Our team shares a single CLAUDE.md for the Claude Code repo. We check it into git… Anytime we see Claude do something incorrectly we add it to the CLAUDE.md, so Claude knows not to do it next time.",c:"@bcherny · 2 Jan 2026",why:"Every mistake happens only once. The file gets smarter every week."},
    {name:"Teach it during code review",logo:"github",term:`<span class="m">PR #482 comment:</span><br>@.claude add "no default exports"<br><span class="g">✓ CLAUDE.md updated</span>`,
     q:"During code review, I will often tag @.claude on my coworkers' PRs to add something to the CLAUDE.md as part of the PR.",c:"@bcherny · 2 Jan 2026",why:"Code review teaches the AI too, not just your teammates."},
-   {name:"Plan mode first",logo:"claude",term:`<span class="m">$</span> claude<br><span class="v">›</span> shift+tab <span class="y">×2</span><br><span class="g">⏸ plan mode on</span>`,
-    q:"Most sessions start in Plan mode (shift+tab twice)… A good plan is really important!",c:"@bcherny · 2 Jan 2026",why:"Agree on the plan first. Then it can usually build it in one go."},
-   {name:"Slash commands for repeat work",logo:"/",term:`<span class="m">.claude/commands/</span><br>  commit-push-pr.md<br><span class="g">used dozens of times a day</span>`,
+      {name:"Slash commands for repeat work",logo:"/",term:`<span class="m">.claude/commands/</span><br>  commit-push-pr.md<br><span class="g">used dozens of times a day</span>`,
     q:"I use slash commands for every 'inner loop' workflow that I end up doing many times a day… Claude and I use a /commit-push-pr slash command dozens of times every day.",c:"@bcherny · 2 Jan 2026",why:"If you type the same thing 10 times a day, make it a command."},
    {name:"Small helper agents",logo:"🤖",term:`<span class="v">code-simplifier</span> → cleans up<br><span class="v">verify-app</span> → tests end to end<br><span class="g">one job each</span>`,
     q:"code-simplifier simplifies the code after Claude is done working, verify-app has detailed instructions for testing Claude Code end to end.",c:"@bcherny · 2 Jan 2026",why:"Little helpers with one job each. Clean it up, then test it."},
    {name:"Auto-format with a hook",logo:"🪝",term:`<span class="m">PostToolUse:</span><br>bun run format || true<br><span class="g">✓ CI stays green</span>`,
     q:"We use a PostToolUse hook to format Claude's code… the hook handles the last 10% to avoid formatting errors in CI later.",c:"@bcherny · 2 Jan 2026",why:"Never fail CI because of a missing comma again."},
-   {name:"Pre-approve safe commands",logo:"🔐",term:`<span class="m">/permissions</span><br>allow: npm test, git status…<br><span class="g">risky stuff still asks</span>`,
-    q:"Instead, I use /permissions to pre-allow common bash commands that I know are safe… Most of these are checked into .claude/settings.json and shared with the team.",c:"@bcherny · 2 Jan 2026",why:"Say yes to the boring safe stuff once. Keep the risky stuff asking."},
-   {name:"Let it use your tools",logo:"slack",term:`<span class="v">Slack</span> · <span class="v">BigQuery</span> · <span class="v">Sentry</span><br>via MCP + CLI<br><span class="g">you stay in one window</span>`,
-    q:"Claude Code uses all my tools for me. It often searches and posts to Slack (via the MCP server), runs BigQuery queries… grabs error logs from Sentry, etc.",c:"@bcherny · 2 Jan 2026",why:"Fewer tabs for you. The agent goes to the tools so you don't have to."},
-   {name:"Long tasks run on their own",logo:"⏳",term:`<span class="m">long task</span> → Stop hook<br>→ verify → keep going<br><span class="g">no waiting on you</span>`,
-    q:"…so Claude can cook without being blocked on me.",c:"@bcherny · 2 Jan 2026",why:"Set it up so long jobs don't sit there waiting for you to click yes."},
-   {name:"Let it check its own work",logo:"✅",term:`<span class="m">change →</span> test in browser<br><span class="m">fail →</span> fix → test again<br><span class="g">2–3x better result</span>`,
+            {name:"Let it check its own work",logo:"✅",term:`<span class="m">change →</span> test in browser<br><span class="m">fail →</span> fix → test again<br><span class="g">2–3x better result</span>`,
     q:"give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result.",c:"@bcherny · 2 Jan 2026 (his most important tip)",why:"Tests, a browser, anything. If it can check itself, it fixes itself."}],
   tldrTitle:"If you only steal 5:",
-  tldr:["Run a few sessions in parallel","Plan first, then let it build","Keep a shared CLAUDE.md and add every mistake","Turn repeat work into slash commands","Give it a way to check its own work"],
+  tldr:["Run several sessions at once, tabs numbered","Add every mistake to a shared CLAUDE.md","Tag @.claude in PR reviews to teach it","Auto-format with a hook so CI never fails on style","Give it a way to check its own work"],
   zero:"He lets Claude deal with Slack. If Slack keeps pulling <i>you</i> out of focus, try Zero.",zline:"It turns Slack, Jira and Linear asks into tasks and books focus time on your Google Calendar. Free Chrome extension, no hype, just try it for a week."},
  {id:"mitchell",who:"Mitchell Hashimoto",role:"co-founder of HashiCorp, creator of Ghostty",src:"blog, \"My AI Adoption Journey\", 5 Feb 2026",
   hook:["The HashiCorp co-founder","shared how he","<span class='hl'>really</span> uses AI."],
@@ -156,7 +146,7 @@ function slides(s){
  a.push(fr(s,1,`
   <p class="tag" style="align-self:flex-start">setup reveal</p>
   <h2 class="h1" style="margin-top:14px;${s.tweet?"font-size:33px":""}">${s.hook.join("<br>")}</h2>
-  <p class="p muted" style="margin-top:10px;${s.tweet?"font-size:13.5px":""}">${s.tweet?"All 13 things he shared, in plain words. Swipe →":s.sub}</p>
+  <p class="p muted" style="margin-top:10px;${s.tweet?"font-size:13.5px":""}">${s.tweet?"Skipping the obvious stuff. Just the "+s.t.length+" tips most devs aren't using yet →":s.sub}</p>
   ${s.tweet?`<img src="${s.tweet}" alt="Boris Cherny's original post on X" style="margin-top:auto;margin-bottom:8px;width:94%;align-self:center;border:1.5px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);transform:rotate(-1.2deg)">`:""}
   <div style="margin-top:auto;${s.tweet?"display:none":""}">${W(s.file,`<div class="term"><span class="m">who:</span> ${s.who}<br><span class="m">role:</span> ${s.role}<br><span class="m">source:</span> ${s.src}<br><span class="g">${s.t.length===3?"3 things worth stealing":"all "+s.t.length+" things, one per slide"} →</span></div>`)}</div>`));
  s.t.forEach((t,k)=>a.push(fr(s,k+2,`
