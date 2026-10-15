@@ -3,10 +3,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Azeret+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
 <style>
-/* Layout: page = stack of carousels; each carousel = horizontal strip of 4:5 slides (Instagram 1080x1350, drawn at 432x540 and scaled for export) */
+/* Layout: page = stack of carousels; each carousel = row of 5 slides at 4:5 (drawn 432x540, exported 1080x1350) */
 :root{
-  --ink:#100a21; --ink2:#181429; --plum:#1f163d; --violet:#6b4ce8; --violet2:#8061ff; --lilac:#a790ff; --mist:#d4d0f1;
-  --paper:#f5f2ea; --sun:#ffd270; --coral:#f88460; --sky:#9ec8ff;
+  --ink:#100a21; --ink2:#181429; --violet:#6b4ce8; --violet2:#8061ff; --lilac:#a790ff; --mist:#d4d0f1;
+  --paper:#f5f2ea; --sun:#ffd270; --coral:#f88460;
   --page-bg:#ece9f5; --page-fg:#1b1532; --page-muted:#5e5878;
   --display:"Instrument Sans",system-ui,sans-serif; --mono:"Azeret Mono",ui-monospace,monospace; --hand:"Caveat","Comic Sans MS",cursive;
 }
@@ -18,110 +18,93 @@ body{background:var(--page-bg);color:var(--page-fg);font-family:var(--display);m
 header h1{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 6px;text-wrap:balance}
 header p{margin:0;color:var(--page-muted);max-width:70ch}
 .set{display:grid;gap:12px}
-.set h2{margin:0;font-size:1.25rem}
-.set .meta{color:var(--page-muted);font-size:.9rem}
-.strip{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory}
-/* ---------- slide ---------- */
-.slide{flex:0 0 auto;width:432px;height:540px;max-width:100%;position:relative;overflow:hidden;border-radius:6px;scroll-snap-align:start;
-  background:var(--ink);color:var(--paper);font-family:var(--display);
-  background-image:radial-gradient(rgba(167,144,255,.16) 1px,transparent 1.3px);background-size:18px 18px}
-.slide.cta{background:linear-gradient(160deg,#311b67 0%,#5629c1 55%,#6b4ce8 100%)}
-.slide .top{position:absolute;top:18px;left:22px;right:22px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--lilac);letter-spacing:.04em}
-.slide .bot{position:absolute;bottom:16px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;color:rgba(212,208,241,.7)}
+.set > h2{margin:0;font-size:1.2rem}
+.strip{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px}
+.slide{flex:0 0 auto;width:432px;height:540px;position:relative;overflow:hidden;border-radius:6px;
+  background:var(--ink);color:var(--paper);background-image:radial-gradient(rgba(167,144,255,.14) 1px,transparent 1.3px);background-size:18px 18px}
+.slide.cta{background:linear-gradient(160deg,#311b67 0%,#5629c1 60%,#6b4ce8 100%)}
+.top{position:absolute;top:18px;left:24px;right:24px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--lilac)}
+.bot{position:absolute;bottom:16px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;color:rgba(212,208,241,.65)}
 .logo{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:13px;color:var(--paper)}
 .logo i{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--lilac),var(--violet));display:block}
-.body{position:absolute;top:48px;left:22px;right:22px;bottom:44px;display:flex;flex-direction:column}
-.h-xl{font-size:44px;line-height:1.02;font-weight:700;letter-spacing:-.02em;margin:0}
-.h-l{font-size:28px;line-height:1.08;font-weight:700;letter-spacing:-.015em;margin:0}
-.p{font-size:15px;line-height:1.4;color:var(--mist);margin:0}
-.mark{background:linear-gradient(transparent 58%,rgba(255,210,112,.55) 58%,rgba(255,210,112,.55) 92%,transparent 92%);padding:0 2px}
+.body{position:absolute;top:50px;left:24px;right:24px;bottom:44px;display:flex;flex-direction:column}
+.h1{font-size:40px;line-height:1.05;font-weight:700;letter-spacing:-.02em;margin:0}
+.h2{font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.015em;margin:0}
+.p{font-size:17px;line-height:1.45;color:var(--mist);margin:0}
 .sun{color:var(--sun)} .lil{color:var(--lilac)}
-.hand{font-family:var(--hand);font-size:22px;color:var(--sun);line-height:1}
-.card{background:var(--ink2);border:1.5px solid rgba(167,144,255,.35);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.7}
-.card .k{color:var(--lilac)} .card .s{color:var(--sun)} .card .c{color:rgba(212,208,241,.5)}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:7px;border:1.5px solid var(--lilac);color:var(--paper);background:rgba(107,76,232,.18)}
-.chip.y{border-color:var(--sun);background:rgba(255,210,112,.12)}
-.big{font-size:72px;font-weight:700;letter-spacing:-.04em;line-height:.9;color:var(--sun)}
-.quote{font-size:21px;line-height:1.3;font-weight:600;margin:0}
-.qmark{font-size:90px;line-height:.6;color:var(--violet2);font-family:Georgia,serif;height:40px}
-.src{font-family:var(--mono);font-size:10px;color:var(--lilac)}
-.av{position:absolute}
-.arrow{position:absolute}
-.cal{background:#fbfaff;color:#1b1532;border-radius:12px;padding:12px;font-family:var(--display);font-size:12px;box-shadow:0 12px 30px rgba(16,10,33,.35)}
-.cal .row{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center;min-height:30px;border-top:1px dashed #e1ddf0}
+.hand{font-family:var(--hand);font-size:26px;color:var(--sun);line-height:1.05;margin:0}
+.note{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--lilac);border-left:2px solid var(--violet2);padding-left:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{background:#fbfaff;border-radius:16px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#1b1532;font-weight:600;font-size:12.5px;text-align:center;padding:8px;box-shadow:0 6px 0 rgba(107,76,232,.45)}
+.tile svg{width:44px;height:44px}
+.tile .txt{width:44px;height:44px;border-radius:12px;background:#ece8fc;color:#5629c1;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:15px}
+.quote{font-size:23px;line-height:1.32;font-weight:600;margin:0}
+.qmark{font-family:Georgia,serif;font-size:96px;line-height:.55;color:var(--violet2);height:44px}
+.src{font-family:var(--mono);font-size:10.5px;color:var(--lilac)}
+.cal{background:#fbfaff;color:#1b1532;border-radius:12px;padding:10px 12px;font-size:12px;box-shadow:0 12px 30px rgba(16,10,33,.35)}
+.cal .row{display:grid;grid-template-columns:58px 1fr;gap:8px;align-items:center;min-height:30px;border-top:1px dashed #e1ddf0}
 .cal .row:first-child{border-top:0}
 .cal .t{font-family:var(--mono);font-size:10px;color:#7d769a}
-.cal .ev{border-radius:7px;padding:6px 8px;font-weight:600}
-.ev.deep{background:#6b4ce8;color:#fff}
-.ev.slack{background:#fdecd3;color:#7a4b00}
-.ev.rev{background:#e7e4f0;color:#311b67}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--sun);color:var(--ink);font-weight:700;border-radius:999px;padding:10px 16px;font-size:14px}
-.disc{font-family:var(--mono);font-size:8.5px;line-height:1.4;color:rgba(236,233,245,.75)}
-.dl{display:flex;gap:10px;flex-wrap:wrap;font-size:.85rem;color:var(--page-muted)}
-@media (max-width:480px){.slide{transform-origin:top left}}
+.ev{border-radius:7px;padding:6px 8px;font-weight:600}
+.ev.deep{background:#6b4ce8;color:#fff} .ev.mt{background:#e7e4f0;color:#5e5878;text-decoration:line-through}
+.btn{display:inline-flex;background:var(--sun);color:var(--ink);font-weight:700;border-radius:999px;padding:10px 16px;font-size:14px}
+.disc{font-family:var(--mono);font-size:8.5px;line-height:1.45;color:rgba(236,233,245,.75)}
 </style>
 
 <main class="wrap">
 <header>
   <h1>Founder carousels for Zero</h1>
-  <p>Six carousels, 7 slides each, in Zero's colours. Doodle avatars are drawn illustrations, not real photos. Swipe each row sideways. The last slide of every carousel is the separate Zero slide with the "not affiliated" line.</p>
+  <p>Six carousels, 5 slides each. Story first, real advice in the middle, Zero only on the last slide. Doodle avatars are drawings, not photos. Swipe each row sideways.</p>
 </header>
 <div id="sets"></div>
 </main>
 
 <script>
-const FOUNDERS=[
- {id:"marc",name:"Marc Lou",tag:"indie hacker",from:"France / Bali",product:"ShipFast + 35 other startups",team:"solo",rev:"$77K",per:"/month",date:"Starter Story, Apr 2026",
-  hook:["Shipped","35 startups.","Solo."],hookSub:"His secret isn't code. It's his mornings.",
-  timeline:[["35","startups shipped"],["$77K","per month (Apr 2026)"],["1","person team"]],
-  stack:["Next.js","ShipFast","1 code editor","AI chat on the right"],stackNote:"one thing at a time, single-threaded",
-  quote:"The deep work is basically a moment of time that I protect because that's what got me here.",
-  habit:"Phone off. No email. Fully offline for the first 4–6 hours of the day.",
-  lesson:["Your best hours","are the first ones.","Don't give them to Slack."],
-  av:{skin:"#f1c7a5",hair:"cap",shirt:"#8061ff",glasses:false},src:"starterstory.com/marclou"},
- {id:"fernando",name:"Fernando Pessagno",tag:"designer who codes",from:"Spain",product:"AI Carousels + ResumeMaker.Online",team:"solo",rev:"$15K",per:"/month",date:"Starter Story, Dec 2024",
-  hook:["4 hours a day.","$15K a month.","Empty calendar."],hookSub:"No stand-ups. No meetings. Just mornings.",
-  timeline:[["Fired","the day before his vacation"],["2","AI apps, built solo"],["$15K","per month (Dec 2024)"]],
-  stack:["Notion","Outseta","AI APIs","lean, ~$1K/mo costs"],stackNote:"boring tools, high margin",
-  quote:"I decided to stick with these four hours of deep [work] each morning. Having this constraint kind of forces you to be intentional about your to do list.",
-  habit:"4 hours of deep work every morning. That's the whole workday.",
-  lesson:["Fewer hours","= a shorter to-do list","= real priorities."],
+const ICONS={"nextdotjs": {"label": "Next.js", "path": "M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z", "hex": "000000"}, "supabase": {"label": "Supabase", "path": "M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z", "hex": "3FCF8E"}, "vercel": {"label": "Vercel", "path": "M24 22.525H0l12-21.05 12 21.05z", "hex": "000000"}, "react": {"label": "React Native", "path": "M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z", "hex": "61DAFB"}, "expo": {"label": "Expo", "path": "M0 20.084c.043.53.23 1.063.718 1.778.58.849 1.576 1.315 2.303.567.49-.505 5.794-9.776 8.35-13.29a.761.761 0 011.248 0c2.556 3.514 7.86 12.785 8.35 13.29.727.748 1.723.282 2.303-.567.57-.835.728-1.42.728-2.046 0-.426-8.26-15.798-9.092-17.078-.8-1.23-1.044-1.498-2.397-1.542h-1.032c-1.353.044-1.597.311-2.398 1.542C8.267 3.991.33 18.758 0 19.77Z", "hex": "000020"}, "svelte": {"label": "SvelteKit", "path": "M10.354 21.125a4.44 4.44 0 0 1-4.765-1.767 4.109 4.109 0 0 1-.703-3.107 3.898 3.898 0 0 1 .134-.522l.105-.321.287.21a7.21 7.21 0 0 0 2.186 1.092l.208.063-.02.208a1.253 1.253 0 0 0 .226.83 1.337 1.337 0 0 0 1.435.533 1.231 1.231 0 0 0 .343-.15l5.59-3.562a1.164 1.164 0 0 0 .524-.778 1.242 1.242 0 0 0-.211-.937 1.338 1.338 0 0 0-1.435-.533 1.23 1.23 0 0 0-.343.15l-2.133 1.36a4.078 4.078 0 0 1-1.135.499 4.44 4.44 0 0 1-4.765-1.766 4.108 4.108 0 0 1-.702-3.108 3.855 3.855 0 0 1 1.742-2.582l5.589-3.563a4.072 4.072 0 0 1 1.135-.499 4.44 4.44 0 0 1 4.765 1.767 4.109 4.109 0 0 1 .703 3.107 3.943 3.943 0 0 1-.134.522l-.105.321-.286-.21a7.204 7.204 0 0 0-2.187-1.093l-.208-.063.02-.207a1.255 1.255 0 0 0-.226-.831 1.337 1.337 0 0 0-1.435-.532 1.231 1.231 0 0 0-.343.15L8.62 9.368a1.162 1.162 0 0 0-.524.778 1.24 1.24 0 0 0 .211.937 1.338 1.338 0 0 0 1.435.533 1.235 1.235 0 0 0 .344-.151l2.132-1.36a4.067 4.067 0 0 1 1.135-.498 4.44 4.44 0 0 1 4.765 1.766 4.108 4.108 0 0 1 .702 3.108 3.857 3.857 0 0 1-1.742 2.583l-5.589 3.562a4.072 4.072 0 0 1-1.135.499m10.358-17.95C18.484-.015 14.082-.96 10.9 1.068L5.31 4.63a6.412 6.412 0 0 0-2.896 4.295 6.753 6.753 0 0 0 .666 4.336 6.43 6.43 0 0 0-.96 2.396 6.833 6.833 0 0 0 1.168 5.167c2.229 3.19 6.63 4.135 9.812 2.108l5.59-3.562a6.41 6.41 0 0 0 2.896-4.295 6.756 6.756 0 0 0-.665-4.336 6.429 6.429 0 0 0 .958-2.396 6.831 6.831 0 0 0-1.167-5.168Z", "hex": "FF3E00"}, "notion": {"label": "Notion", "path": "M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z", "hex": "000000"}, "javascript": {"label": "JavaScript", "path": "M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z", "hex": "F7DF1E"}, "adobephotoshop": {"label": "Photoshop", "path": "M9.85 8.42c-.37-.15-.77-.21-1.18-.2-.26 0-.49 0-.68.01-.2-.01-.34 0-.41.01v3.36c.14.01.27.02.39.02h.53c.39 0 .78-.06 1.15-.18.32-.09.6-.28.82-.53.21-.25.31-.59.31-1.03.01-.31-.07-.62-.23-.89-.17-.26-.41-.46-.7-.57zM19.75.3H4.25C1.9.3 0 2.2 0 4.55v14.899c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zm-7.391 11.65c-.399.56-.959.98-1.609 1.22-.68.25-1.43.34-2.25.34-.24 0-.4 0-.5-.01s-.24-.01-.43-.01v3.209c.01.07-.04.131-.11.141H5.52c-.08 0-.12-.041-.12-.131V6.42c0-.07.03-.11.1-.11.17 0 .33 0 .56-.01.24-.01.49-.01.76-.02s.56-.01.87-.02c.31-.01.61-.01.91-.01.82 0 1.5.1 2.06.31.5.17.96.45 1.34.82.32.32.57.71.73 1.14.149.42.229.85.229 1.3.001.86-.199 1.57-.6 2.13zm7.091 3.89c-.28.4-.671.709-1.12.891-.49.209-1.09.318-1.811.318-.459 0-.91-.039-1.359-.129-.35-.061-.7-.17-1.02-.32-.07-.039-.121-.109-.111-.189v-1.74c0-.029.011-.07.041-.09.029-.02.06-.01.09.01.39.23.8.391 1.24.49.379.1.779.15 1.18.15.38 0 .65-.051.83-.141.16-.07.27-.24.27-.42 0-.141-.08-.27-.24-.4-.16-.129-.489-.279-.979-.471-.51-.18-.979-.42-1.42-.719-.31-.221-.569-.51-.761-.85-.159-.32-.239-.67-.229-1.021 0-.43.12-.84.341-1.21.25-.4.619-.72 1.049-.92.469-.239 1.059-.349 1.769-.349.41 0 .83.03 1.24.09.3.04.59.12.86.23.039.01.08.05.1.09.01.04.02.08.02.12v1.63c0 .04-.02.08-.05.1-.09.02-.14.02-.18 0-.3-.16-.62-.27-.96-.34-.37-.08-.74-.13-1.12-.13-.2-.01-.41.02-.601.07-.129.03-.24.1-.31.2-.05.08-.08.18-.08.27s.04.18.101.26c.09.11.209.2.34.27.229.12.47.23.709.33.541.18 1.061.43 1.541.73.33.209.6.49.789.83.16.318.24.67.23 1.029.011.471-.129.94-.389 1.331z", "hex": "31A8FF"}, "gumroad": {"label": "Gumroad", "path": "M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0Zm-.007 5.12c4.48 0 5.995 3.025 6.064 4.744h-3.239c-.069-.962-.897-2.406-2.896-2.406-2.136 0-3.514 1.857-3.514 4.126 0 2.27 1.378 4.125 3.514 4.125 1.93 0 2.758-1.512 3.103-3.025h-3.103v-1.238h6.509v6.327h-2.855v-3.989c-.207 1.444-1.102 4.264-4.617 4.264-3.516 0-5.584-2.82-5.584-6.326 0-3.645 2.276-6.602 6.618-6.602z", "hex": "FF90E8"}, "caldotcom": {"label": "Cal.com", "path": "M2.408 14.488C1.035 14.488 0 13.4 0 12.058c0-1.346.982-2.443 2.408-2.443.758 0 1.282.233 1.691.765l-.66.55a1.343 1.343 0 0 0-1.03-.442c-.93 0-1.44.711-1.44 1.57 0 .86.559 1.557 1.44 1.557.413 0 .765-.147 1.043-.443l.651.573c-.391.51-.929.743-1.695.743zM6.948 10.913h.89v3.49h-.89v-.51c-.185.362-.493.604-1.083.604-.943 0-1.695-.82-1.695-1.826 0-1.007.752-1.825 1.695-1.825.585 0 .898.241 1.083.604zm.026 1.758c0-.546-.374-.998-.964-.998-.568 0-.938.457-.938.998 0 .528.37.998.938.998.586 0 .964-.456.964-.998zM8.467 9.503h.89v4.895h-.89zM9.752 13.937a.53.53 0 0 1 .542-.528c.313 0 .533.242.533.528a.527.527 0 0 1-.533.537.534.534 0 0 1-.542-.537zM14.23 13.839c-.33.403-.832.658-1.426.658a1.806 1.806 0 0 1-1.84-1.826c0-1.007.778-1.825 1.84-1.825.572 0 1.07.241 1.4.622l-.687.577c-.172-.215-.396-.376-.713-.376-.568 0-.938.456-.938.998 0 .541.37.997.938.997.343 0 .58-.179.757-.42zM14.305 12.671c0-1.007.78-1.825 1.84-1.825 1.061 0 1.84.818 1.84 1.825 0 1.007-.779 1.826-1.84 1.826-1.06-.005-1.84-.82-1.84-1.826zm2.778 0c0-.546-.37-.998-.938-.998-.568-.004-.937.452-.937.998 0 .542.37.998.937.998.568 0 .938-.456.938-.998zM24 12.269v2.13h-.89v-1.911c0-.604-.281-.864-.704-.864-.396 0-.678.197-.678.864v1.91h-.89v-1.91c0-.604-.285-.864-.704-.864-.396 0-.744.197-.744.864v1.91h-.89v-3.49h.89v.484c.185-.376.52-.564 1.035-.564.489 0 .898.241 1.123.649.224-.417.554-.65 1.153-.65.731.005 1.299.56 1.299 1.442z", "hex": "292929"}, "plausibleanalytics": {"label": "Plausible", "path": "M12.1835.0017c-.6378-.0097-1.2884.022-1.7246.0996C8.601.424 7.035 1.2116 5.7384 2.4782 4.406 3.7806 3.582 5.299 3.1818 7.1929l-.1387.6445c-.0118 5.3872-.0233 10.7744-.035 16.1617.2914.0081.591-.0392.8416-.0606 2.348-.2868 4.3442-1.7083 5.4315-3.8651.2749-.5497.472-1.182.6094-1.9707.1135-.6691.1195-.8915.1016-4.3807l-.0176-3.6737.1425-.3574c.1972-.49.7425-1.0352 1.2324-1.2324l.3574-.1426 3.3457-.0058c1.8401 0 3.4545-.025 3.58-.0489.5854-.1135 1.2118-.6027 1.4628-1.1464.0717-.1494.1671-.4415.209-.6387.0657-.3286.0604-.4186-.0352-.789-.2987-1.0993-1.3503-2.6234-2.4257-3.5136C16.6247 1.1638 15.2798.4887 13.828.1482c-.3824-.0866-1.0067-.1368-1.6445-.1465zm8.5369 6.8006c-.0506.1798-.098.3662-.172.5215-.3358.7278-1.0382 1.2776-1.8221 1.4296-3.6737.0566-2.5392.0561-3.6737.0566l-3.248.0059-.2695.1074c-.3135.1262-.827.6397-.9531.9531l-.1074.2676.0175 3.576c.0149 2.8888.007 3.5821-.0605 4.125a8.9918 8.9918 0 0 0 1.5683.1386c4.9662.0001 8.992-4.0258 8.992-8.992a8.9918 8.9918 0 0 0-.2715-2.1893Z", "hex": "5850EC"}, "mailgun": {"label": "Mailgun", "path": "M11.837 0c6.602 0 11.984 5.381 11.984 11.994-.017 2.99-3.264 4.84-5.844 3.331a3.805 3.805 0 0 1-.06-.035l-.055-.033-.022.055c-2.554 4.63-9.162 4.758-11.894.232-2.732-4.527.46-10.313 5.746-10.416a6.868 6.868 0 0 1 7.002 6.866 1.265 1.265 0 0 0 2.52 0c0-5.18-4.197-9.38-9.377-9.387C4.611 2.594.081 10.41 3.683 16.673c3.238 5.632 11.08 6.351 15.289 1.402l1.997 1.686A11.95 11.95 0 0 1 11.837 24C2.6 23.72-2.87 13.543 1.992 5.684A12.006 12.006 0 0 1 11.837 0Zm0 7.745c-3.276-.163-5.5 3.281-4.003 6.2a4.26 4.26 0 0 0 4.014 2.31c3.276-.171 5.137-3.824 3.35-6.575a4.26 4.26 0 0 0-3.36-1.935Zm0 2.53c1.324 0 2.152 1.433 1.49 2.58a1.72 1.72 0 0 1-1.49.86 1.72 1.72 0 1 1 0-3.44Z", "hex": "F06B66"}};
+const F=[
+ {id:"marc",name:"Marc Lou",earn:"$77,000",under:"from a bunch of small apps he built alone.",
+  app:"His best known one is <span class='sun'>ShipFast</span>.",what:"It's a ready-made starter kit for Next.js apps. Login, payments and emails are already set up, so you skip the boring part and ship your idea in days.",
+  fact:"He has shipped 35+ startups. Solo.",
+  stack:["nextdotjs",["⚡","ShipFast"],["AI","AI chat in editor"]],stackNote:"one editor, chat on the side, one thing at a time",
+  quote:"The deep work is basically a moment of time that I protect because that's what got me here.",when:"Apr 2026",
+  extra:"Every morning he stays fully offline for 4–6 hours. No phone, no email.",
+  av:{skin:"#f1c7a5",hair:"cap",shirt:"#8061ff"},src:"starterstory.com/marclou"},
+ {id:"fernando",name:"Fernando Pessagno",earn:"$15,000",under:"from two simple apps you've probably never heard of.",
+  app:"The apps are <span class='sun'>AI Carousels</span> and <span class='sun'>ResumeMaker</span>.",what:"One makes Instagram carousels with AI. The other helps you build a clean resume. He runs both alone.",
+  fact:"And he only works about 4 hours a day.",
+  stack:["notion",["O","Outseta"],["AI","AI APIs"]],stackNote:"small stack, ~$1K a month in costs",
+  quote:"I decided to stick with these four hours of deep [work] each morning. Having this constraint kind of forces you to be intentional about your to do list.",when:"Dec 2024",
+  extra:"No stand-ups. His calendar is basically empty.",
   av:{skin:"#e8b48f",hair:"curly",shirt:"#ffd270",glasses:true},src:"starterstory.com/stories/i-make-15k-month-with-2-ai-apps"},
- {id:"ben",name:"Ben Bozzay",tag:"software dev",from:"USA",product:"Tech Lockdown (site & app blocker)",team:"solo",rev:"$15K",per:"MRR",date:"Starter Story, Jul 2025",
-  hook:["Coded at 5:30am","before his 9–5.","Now it is his 9–5."],hookSub:"Laid off. Picked his side project over a job offer.",
-  timeline:[["5:30am","daily dev block"],["1,300","customers"],["$15K","MRR (Jul 2025)"]],
-  stack:["SvelteKit","Supabase","Vercel","Mailgun","Plausible"],stackNote:"email = his most important tool",
-  quote:"prioritizing development tasks and stuff that just required more focus and attention in the morning. So I would do that between 5:30 and 8 o'clock",
-  habit:"Hard dev work 5:30–8:30am, brain fresh. Marketing in the evening.",
-  lesson:["Deep work first.","Shallow work later.","Match the task to your energy."],
-  av:{skin:"#f3cfb3",hair:"short",shirt:"#9ec8ff",glasses:false,beard:true},src:"starterstory.com/stories/my-side-project-makes-15k-month-quit-my-9-5"},
- {id:"jack",name:"Jack Friks",tag:"self-taught dev",from:"Canada",product:"PostBridge + Curiosity Quench",team:"solo",rev:"$10K",per:"/month",date:"Starter Story, Mar 2025",
-  hook:["One timer.","One task.","$10K a month."],hookSub:"Taught himself to code. Built it from his mom's basement.",
-  timeline:[["1 yr","to learn to code"],["2","apps"],["$10K","per month (Mar 2025)"]],
-  stack:["Next.js","React Native + Expo","Supabase","ShipFast"],stackNote:"plus a work timer",
-  quote:"Every day I just start a timer and I lock in. I focus on the task, one task that I'm doing.",
-  habit:"Start a timer. One task. 60–120 minutes. Stop at dinner.",
-  lesson:["Multitasking feels fast.","It isn't.","One task, one block, ship."],
-  av:{skin:"#f6d7c0",hair:"messy",shirt:"#f88460",glasses:false,hoodie:true},src:"starterstory.com/stories/i-built-a-10k-month-app-from-my-mom-s-basement"},
- {id:"louis",name:"Louis Pereira",tag:"part-time builder",from:"India 🇮🇳",product:"AudioPen (voice → clean text)",team:"solo, part-time",rev:"$15K",per:"/month",date:"Starter Story, Dec 2025",
-  hook:["Built in 12 hours.","Part-time.","$15K a month."],hookSub:"He still works in his family business.",
-  timeline:[["12 hrs","to build v1"],["5,000+","paying users"],["$15K","per month (Dec 2025)"]],
-  stack:["Bubble","Xano","Draftbit","Loops","Plausible"],stackNote:"no-code, and it works",
-  quote:"AudioPen focuses on doing one thing very well… I've consciously stuck to doing the simple stuff well. I think that slow consistency is what has worked for me.",
-  habit:"Says no to shiny ideas. Does one thing well. Every day, slowly.",
-  lesson:["Focus isn't only hours.","It's saying no","to the next feature."],
+ {id:"ben",name:"Ben Bozzay",earn:"$15,000",under:"from a simple app you've probably never heard of.",
+  app:"The app is called <span class='sun'>Tech Lockdown</span>.",what:"It blocks distracting websites and apps on your phone and laptop. Around 1,300 people pay for it.",
+  fact:"He built it on the side, coding at 5:30am before his job.",
+  stack:["svelte","supabase","vercel","mailgun","plausibleanalytics"],stackNote:"SvelteKit + Supabase, deployed on Vercel",
+  quote:"prioritizing development tasks and stuff that just required more focus and attention in the morning. So I would do that between 5:30 and 8 o'clock",when:"Jul 2025",
+  extra:"Hard coding in the morning. Marketing and easy stuff in the evening.",
+  av:{skin:"#f3cfb3",hair:"short",shirt:"#9ec8ff",beard:true},src:"starterstory.com/stories/my-side-project-makes-15k-month-quit-my-9-5"},
+ {id:"jack",name:"Jack Friks",earn:"$10,000",under:"from two small apps he built in his mom's basement.",
+  app:"The apps are <span class='sun'>PostBridge</span> and <span class='sun'>Curiosity Quench</span>.",what:"PostBridge posts your content to every social platform at once. Curiosity Quench helps you scroll less.",
+  fact:"He taught himself to code in about a year.",
+  stack:["nextdotjs","react","expo","supabase",["⚡","ShipFast"]],stackNote:"web in Next.js, mobile in React Native + Expo",
+  quote:"Every day I just start a timer and I lock in. I focus on the task, one task that I'm doing.",when:"Mar 2025",
+  extra:"One task per block, 60–120 minutes, then a break.",
+  av:{skin:"#f6d7c0",hair:"messy",shirt:"#f88460",hoodie:true},src:"starterstory.com/stories/i-built-a-10k-month-app-from-my-mom-s-basement"},
+ {id:"louis",name:"Louis Pereira",earn:"$15,000",under:"from a simple app you've probably never heard of. Built in India 🇮🇳",
+  app:"The app is called <span class='sun'>AudioPen</span>.",what:"You talk, it listens, and it turns your messy voice note into clean, readable text. That's it.",
+  fact:"First version took 12 hours. He still works on it part-time.",
+  stack:[["B","Bubble"],["X","Xano"],["D","Draftbit"],["L","Loops"],"plausibleanalytics"],stackNote:"no-code tools, and it still makes $15K",
+  quote:"AudioPen focuses on doing one thing very well… I've consciously stuck to doing the simple stuff well. I think that slow consistency is what has worked for me.",when:"Dec 2025",
+  extra:"He keeps saying no to new features and new ideas.",
   av:{skin:"#c98d63",hair:"side",shirt:"#a790ff",glasses:true},src:"starterstory.com/Louis"},
- {id:"vikash",name:"Vikash",tag:"designer turned dev",from:"India 🇮🇳",product:"BulkMockup (Photoshop plugin)",team:"tiny team",rev:"$12K",per:"/month",date:"Starter Story, Feb 2026",
-  hook:["Locked in a room","for 2 months.","Now $12K a month."],hookSub:"But there's a part of the story nobody tells.",
-  timeline:[["2 mo","of pure focus for v1"],["1 hr → 2 min","per mockup"],["$12K","per month (Feb 2026)"]],
-  stack:["JavaScript","Photoshop plugin","Gumroad","Notion","Cal.com"],stackNote:"learned JS to automate his own work",
-  quote:"do not ignore your health. I had been grinding 14 16 hours a day",
-  habit:"2 months of focus built it. 14–16 hour days ended in spine surgery.",
-  lesson:["Deep work, yes.","Grinding, no.","Protect the block and your body."],
-  av:{skin:"#b97e57",hair:"short",shirt:"#ffd270",glasses:false,beard:true},src:"starterstory.com/vikash"}
+ {id:"vikash",name:"Vikash",earn:"$12,000",under:"from a Photoshop plugin you've probably never heard of. Built in India 🇮🇳",
+  app:"The app is called <span class='sun'>BulkMockup</span>.",what:"Designers drop one design and get hundreds of product mockups. A job that took an hour now takes 2 minutes.",
+  fact:"He learned JavaScript just to build it.",
+  stack:["javascript","adobephotoshop","gumroad","notion","caldotcom"],stackNote:"a Photoshop plugin in JS, sold on Gumroad",
+  quote:"So I logged myself into my room for two straight months.",quote2:"do not ignore your health. I had been grinding 14 16 hours a day",when:"Feb 2026",
+  extra:"Focus built it. The 16-hour days ended in spine surgery.",
+  av:{skin:"#b97e57",hair:"short",shirt:"#ffd270",beard:true},src:"starterstory.com/vikash"}
 ];
-
 /* ---------- doodle avatar (generic illustration, not a likeness) ---------- */
 function avatar(a,size=170,id="x"){
   const st="#f5f2ea", sw=3.2;
@@ -155,72 +138,58 @@ const doodleArrow=(d,w=90,h=60)=>`<svg width="${w}" height="${h}" viewBox="0 0 9
 const ARR_DOWN="M10 6 Q60 4 66 44 M56 36 L66 46 L74 34";
 const ARR_LEFT="M80 10 Q40 6 18 40 M14 26 L16 42 L30 40";
 
+
+function tile(t){
+  if(Array.isArray(t)) return `<div class="tile"><span class="txt">${t[0]}</span>${t[1]}</div>`;
+  const ic=ICONS[t];
+  return `<div class="tile"><svg viewBox="0 0 24 24"><path d="${ic.path}" fill="#${ic.hex==="FFFFFF"?"000000":ic.hex}"/></svg>${ic.label}</div>`;
+}
 function frame(f,i,inner,cls=""){
   return `<section class="slide ${cls}" data-set="${f.id}" data-i="${i}">
-   <div class="top"><span>${cls==="cta"?"// for devs who love to ship":"// "+f.id+".story"}</span><span>${i}/7</span></div>
+   <div class="top"><span>// ${cls==="cta"?"for devs who love to ship":f.id+".story"}</span><span>${i}/5</span></div>
    <div class="body">${inner}</div>
-   <div class="bot"><span class="logo"><i></i>Zero</span><span>${i<7?(i===1?"swipe →":"source: "+f.date):""}</span></div>
-  </section>`;
+   <div class="bot"><span class="logo"><i></i>Zero</span><span>${i===1?"swipe →":(i<5?"story via Starter Story, "+f.when:"")}</span></div></section>`;
 }
 function slides(f){
-  const out=[];
-  out.push(frame(f,1,`
-    <p class="hand" style="margin-bottom:10px">a real story ↓</p>
-    <h2 class="h-xl">${f.hook[0]}<br><span class="sun">${f.hook[1]}</span><br>${f.hook[2]}</h2>
-    <p class="p" style="margin-top:14px;max-width:24ch">${f.hookSub}</p>
-    <div class="av" style="right:-8px;bottom:-6px">${avatar(f.av,190,f.id+"a")}</div>
-    <div class="arrow" style="right:150px;bottom:150px">${doodleArrow(ARR_DOWN)}</div>`));
-  out.push(frame(f,2,`
-    <p class="hand">meet the founder</p>
-    <div style="display:flex;gap:10px;align-items:flex-end;margin-top:6px">
-      <div>${avatar(f.av,120,f.id+"b")}</div>
-      <p class="hand" style="font-size:18px;color:var(--mist);transform:rotate(-4deg)">(doodle, not a photo)</p>
+  return [
+  frame(f,1,`
+    <h2 class="h1">This guy makes<br><span class="sun">${f.earn}</span> a month</h2>
+    <div style="position:relative;flex:1">
+      <svg style="position:absolute;left:30px;top:6px" width="120" height="110" viewBox="0 0 120 110"><path d="M14 8 Q20 70 92 82 M78 70 L94 83 L78 94" fill="none" stroke="#ffd270" stroke-width="3" stroke-linecap="round"/></svg>
+      <div style="position:absolute;right:20px;top:14px">${avatar(f.av,215,f.id+"1")}</div>
     </div>
-    <div class="card" style="margin-top:12px">
-      <span class="c">// founder.json</span><br>
-      { <span class="k">"name"</span>: <span class="s">"${f.name}"</span>,<br>
-      &nbsp;&nbsp;<span class="k">"is"</span>: <span class="s">"${f.tag}"</span>,<br>
-      &nbsp;&nbsp;<span class="k">"from"</span>: <span class="s">"${f.from}"</span>,<br>
-      &nbsp;&nbsp;<span class="k">"built"</span>: <span class="s">"${f.product}"</span>,<br>
-      &nbsp;&nbsp;<span class="k">"team"</span>: <span class="s">"${f.team}"</span> }
-    </div>`));
-  out.push(frame(f,3,`
-    <p class="hand">the numbers</p>
-    <div class="big" style="margin-top:8px">${f.rev}<span style="font-size:24px;color:var(--lilac);letter-spacing:0"> ${f.per}</span></div>
-    <div style="display:grid;gap:10px;margin-top:26px">
-      ${f.timeline.map((t,k)=>`<div style="display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start">
-        <span style="width:14px;height:14px;border-radius:50%;border:2.5px solid var(--sun);margin-top:6px;${k===2?"background:var(--sun)":""}"></span>
-        <div><b style="font-size:22px">${t[0]}</b><div class="p" style="font-size:13px">${t[1]}</div></div></div>`).join("")}
-    </div>`));
-  out.push(frame(f,4,`
-    <p class="hand">the tech stack</p>
-    <h2 class="h-l" style="margin-top:6px">Nothing fancy.<br><span class="lil">That's the point.</span></h2>
-    <div class="card" style="margin-top:18px"><span class="c">$</span> cat stack.txt</div>
-    <div class="chips" style="margin-top:12px">${f.stack.map((s,k)=>`<span class="chip ${k%2?"y":""}">${s}</span>`).join("")}</div>
-    <p class="hand" style="margin-top:auto;font-size:20px">↳ ${f.stackNote}</p>`));
-  out.push(frame(f,5,`
-    <p class="hand">the habit that matters</p>
-    <div class="qmark" style="margin-top:14px">“</div>
+    <p class="hand" style="font-size:28px">${f.under}</p>`),
+  frame(f,2,`
+    <p class="hand">so what's the app?</p>
+    <h2 class="h2" style="margin-top:12px">${f.app}</h2>
+    <p class="p" style="margin-top:16px">${f.what}</p>
+    <div style="margin-top:auto;display:flex;align-items:flex-end;gap:12px">
+      <div style="flex:0 0 auto">${avatar(f.av,92,f.id+"2")}</div>
+      <p class="note">${f.fact}</p>
+    </div>`),
+  frame(f,3,`
+    <p class="hand">here's what he built it with</p>
+    <p class="src" style="margin-top:8px">$ cat stack.txt</p>
+    <div class="grid" style="margin-top:16px">${f.stack.map(tile).join("")}</div>
+    <p class="hand" style="margin-top:auto;font-size:22px;color:var(--mist)">↳ ${f.stackNote}</p>`),
+  frame(f,4,`
+    <p class="hand">and the most useful advice from him 👇</p>
+    <div class="qmark" style="margin-top:18px">“</div>
     <p class="quote">${f.quote}</p>
-    <p class="src" style="margin-top:12px">— ${f.name}, ${f.date}</p>
-    <div class="card" style="margin-top:auto;font-family:var(--display);font-size:14px;line-height:1.4"><span class="sun" style="font-family:var(--mono);font-size:11px">in short:</span><br>${f.habit}</div>`));
-  out.push(frame(f,6,`
-    <p class="hand">the lesson</p>
-    <h2 class="h-xl" style="margin-top:10px;font-size:34px">${f.lesson[0]}<br><span class="mark" style="color:var(--paper)">${f.lesson[1]}</span><br><span class="lil">${f.lesson[2]}</span></h2>
-    <p class="p" style="margin-top:auto">Most devs don't lose to bad code.<br>They lose their best hours to pings.</p>`));
-  out.push(frame(f,7,`
-    <p class="hand" style="color:var(--sun)">want your own deep work block?</p>
-    <h2 class="h-l" style="margin-top:6px">Zero finds your focus time<br>and protects it.</h2>
+    ${f.quote2?`<p class="quote" style="margin-top:10px;font-size:19px;color:var(--coral)">“${f.quote2}”</p>`:""}
+    <p class="src" style="margin-top:12px">— ${f.name}, on Starter Story (${f.when})</p>
+    <p class="note" style="margin-top:auto;font-family:var(--display);font-size:14px;color:var(--mist)">${f.extra}</p>`),
+  frame(f,5,`
+    <p class="hand">if you want to try this yourself</p>
+    <h2 class="h2" style="margin-top:10px;font-size:26px">Start with just 2 hours a day where nobody can pull you away.</h2>
+    <p class="p" style="margin-top:10px;font-size:14.5px">That's what we built Zero for. It finds the free time in your week and blocks it for deep work, so Slack and "quick calls" can wait.</p>
     <div class="cal" style="margin-top:14px">
-      <div class="row"><span class="t">9:30</span><span class="ev slack">"I'll review the PR today" → tracked</span></div>
-      <div class="row"><span class="t">10–11:30</span><span class="ev deep">Deep work · protected</span></div>
-      <div class="row"><span class="t">5:00</span><span class="ev rev">Review what got shipped</span></div>
+      <div class="row"><span class="t">10:00</span><span class="ev mt">"quick sync?"</span></div>
+      <div class="row"><span class="t">10–12</span><span class="ev deep">Deep work · protected</span></div>
     </div>
-    <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="btn">Try Zero free →</span><span class="p" style="font-size:12px">Chrome extension · works with Slack & Calendar</span></div>
-    <p class="disc" style="margin-top:auto">Zero is not affiliated with ${f.name} or Starter Story. No endorsement implied. Story facts from a public Starter Story interview (${f.src}), retold in our words.</p>`,"cta"));
-  return out.join("");
+    <div style="margin-top:14px"><span class="btn">Try Zero, it's free →</span></div>
+    <p class="disc" style="margin-top:auto">Zero is not affiliated with ${f.name} or Starter Story. No endorsement implied. Story facts from a public Starter Story interview (${f.src}), retold in our words.</p>`,"cta")
+  ].join("");
 }
-document.getElementById("sets").innerHTML=FOUNDERS.map((f,n)=>`
-  <div class="set"><h2>${n+1}. ${f.name}: ${f.hook.join(" ")}</h2><div class="meta">${f.product} · ${f.rev}${f.per} · ${f.date}</div>
-  <div class="strip">${slides(f)}</div></div>`).join("");
+document.getElementById("sets").innerHTML=F.map((f,n)=>`<div class="set"><h2>${n+1}. ${f.name}</h2><div class="strip">${slides(f)}</div></div>`).join("");
 </script>
