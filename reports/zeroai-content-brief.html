@@ -1,0 +1,312 @@
+<title>ZeroAI Reel Brief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;800&family=Figtree:wght@400;500;600;700&family=Fira+Code:wght@500&display=swap">
+<style>
+/* Layout: single column of short visual blocks — IS/NOT split, rule tiles, angle scorecards, hook "phone" chips, ordered shot list */
+:root{
+  --bg:#f4f4f8; --surface:#ffffff; --ink:#1b1830; --muted:#615d78; --line:#e1dfeb;
+  --accent:#5b3fd9; --accent-soft:#ece8fc; --pink:#c8326b; --pink-soft:#fbe6ee;
+  --good:#17804a; --good-soft:#e0f3e8; --warn:#9a6a00; --warn-soft:#fbf0d2; --bad:#c03a1a; --bad-soft:#fce5dd;
+  --display:"Sora",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"Fira Code",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121019; --surface:#1c1927; --ink:#ecebf5; --muted:#a29fb8; --line:#2e2a40;
+  --accent:#9d87ff; --accent-soft:#2a2350; --pink:#f0729f; --pink-soft:#3a1828;
+  --good:#4fd18b; --good-soft:#13301f; --warn:#f2c14e; --warn-soft:#352a10; --bad:#ff8a6a; --bad-soft:#3a1c14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121019; --surface:#1c1927; --ink:#ecebf5; --muted:#a29fb8; --line:#2e2a40;
+  --accent:#9d87ff; --accent-soft:#2a2350; --pink:#f0729f; --pink-soft:#3a1828;
+  --good:#4fd18b; --good-soft:#13301f; --warn:#f2c14e; --warn-soft:#352a10; --bad:#ff8a6a; --bad-soft:#3a1c14; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:52px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+section{display:grid;gap:18px}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.short{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-weight:500;max-width:72ch}
+.note{font-size:.85rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.big3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.big3{grid-template-columns:1fr}}
+.big3 .card b{font-family:var(--display);font-size:1.15rem}
+/* IS / NOT */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.split{grid-template-columns:1fr}}
+.is{background:var(--good-soft);border-radius:14px;padding:18px;display:grid;gap:10px;align-content:start}
+.not{background:var(--bad-soft);border-radius:14px;padding:18px;display:grid;gap:10px;align-content:start}
+.is h3{color:var(--good)} .not h3{color:var(--bad)}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.list li{display:grid;grid-template-columns:22px 1fr;gap:6px;font-size:.95rem}
+.list li::before{font-weight:700}
+.is .list li::before{content:"✓";color:var(--good)}
+.not .list li::before{content:"?";color:var(--bad)}
+.punch{font-family:var(--display);font-weight:800;font-size:1.25rem;text-align:center;padding:6px}
+.punch em{font-style:normal;color:var(--good)} .punch s{text-decoration:none;color:var(--bad)}
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:4px;align-content:start}
+.rule .n{font-family:var(--mono);font-size:.75rem;color:var(--pink)}
+.rule b{font-size:1rem}
+.rule span{font-size:.88rem;color:var(--muted)}
+/* angles */
+.angles{display:grid;gap:14px}
+.angle{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px}
+@media (max-width:720px){.angle{grid-template-columns:1fr}}
+.angle .left{display:grid;gap:10px;align-content:start;min-width:0}
+.angle .title{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-size:.75rem;border-radius:999px;padding:3px 10px;font-weight:500;white-space:nowrap}
+.keep{background:var(--good-soft);color:var(--good)} .fix{background:var(--warn-soft);color:var(--warn)} .rebuild{background:var(--bad-soft);color:var(--bad)}
+.fixline{font-size:.95rem}
+.risk{font-size:.88rem;color:var(--bad);background:var(--bad-soft);border-radius:8px;padding:8px 10px}
+.meter{display:grid;gap:10px;align-content:center}
+.mrow{display:grid;gap:4px}
+.mrow small{font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between}
+.mtrack{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.mfill{height:100%;border-radius:6px}
+.mfill.before{background:var(--muted)} .mfill.after{background:var(--accent)}
+.newline{font-family:var(--display);font-weight:600;font-size:1.02rem;border-left:3px solid var(--accent);padding-left:10px}
+/* new angles */
+.hookcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start}
+.hookcard .q{font-family:var(--display);font-weight:600;font-size:1rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:.72rem;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:3px 8px}
+.chip.stat{background:var(--pink-soft);color:var(--pink)}
+/* stats */
+.stat{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700}
+.stat.ok .ic{background:var(--good-soft);color:var(--good)}
+.stat.no .ic{background:var(--bad-soft);color:var(--bad)}
+.stat q{font-weight:600;quotes:"“" "”"}
+.stat small{display:block;font-size:.8rem;color:var(--muted)}
+.stats{display:grid;gap:8px}
+/* hooks phones */
+.phones{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.phone{aspect-ratio:9/12;max-width:100%;background:var(--ink);color:var(--bg);border-radius:18px;padding:16px 14px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.phone span{font-family:var(--mono);font-size:.68rem;opacity:.7}
+.phone p{font-family:var(--display);font-weight:600;font-size:.98rem;line-height:1.3}
+/* order */
+.order{display:grid;gap:10px;counter-reset:o}
+.ostep{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.ostep .num{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--accent)}
+.ostep small{display:block;color:var(--muted);font-size:.85rem}
+@media (max-width:560px){.ostep{grid-template-columns:36px 1fr}.ostep .chip{grid-column:2;justify-self:start}}
+.footer{border-top:1px solid var(--line);padding-top:18px;font-size:.85rem;color:var(--muted);display:grid;gap:6px}
+</style>
+
+<main class="wrap">
+
+<header class="hero" style="display:grid;gap:16px">
+  <span class="eyebrow">Content brief · ZeroAI · Instagram · Oct 2026</span>
+  <h1>What developers watch when they're not coding</h1>
+  <p class="lead">Research on dev reels, carousels and posts, plus a verdict on your 4 angles and 10 new ones. Simple version.</p>
+  <div class="big3">
+    <div class="card"><b>😂 Make them laugh at their own work life</b><p>Meetings, pings, "quick call?", bugs. Developers share these with teammates.</p></div>
+    <div class="card"><b>📱 Phone camera, tight edit</b><p>Lo-fi look is fine. Wasting their time is not. Cut fast, add captions.</p></div>
+    <div class="card"><b>🎯 Product in the last 3 seconds</b><p>Laugh or value first. Then show ZeroAI fixing that one pain.</p></div>
+  </div>
+</header>
+
+<section>
+  <span class="eyebrow">Know the product</span>
+  <h2>What ZeroAI is, and what it is not</h2>
+  <div class="split">
+    <div class="is">
+      <h3>It IS (found in sources)</h3>
+      <ul class="list">
+        <li>A free Chrome extension: "Zero: You Code. It Handles Slack, Meetings &amp; Calendar."</li>
+        <li>Turns Slack, Jira and Linear asks into tasks</li>
+        <li>Takes meeting notes</li>
+        <li>Books "Deep Work" blocks on Google Calendar</li>
+        <li>Scans your next 2 weeks and shows where focus time went</li>
+        <li>End-of-day close-out that plans tomorrow</li>
+        <li>~6,000–7,000 users, ~4.9★ rating</li>
+      </ul>
+    </div>
+    <div class="not">
+      <h3>NOT found. Ask the client first</h3>
+      <ul class="list">
+        <li>Replies to your manager for you</li>
+        <li>Writes status updates or the "tracker"</li>
+        <li>Finds the Postman collection</li>
+        <li>Blocks websites</li>
+        <li>VS Code or mobile app</li>
+      </ul>
+    </div>
+  </div>
+  <p class="punch">ZeroAI <em>catches</em> the asks. It does not <s>answer</s> them.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The rules</span>
+  <h2>8 rules for developer content</h2>
+  <div class="rules">
+    <div class="rule"><span class="n">RULE 1</span><b>Lo-fi camera, tight edit</b><span>Shoot on a phone. Jump cuts + captions.</span></div>
+    <div class="rule"><span class="n">RULE 2</span><b>Hook in 1–3 seconds</b><span>Up to half of people swipe away in 3 seconds.</span></div>
+    <div class="rule"><span class="n">RULE 3</span><b>Reels: 30–60 seconds</b><span>Best reach in a 140K-reel study.</span></div>
+    <div class="rule"><span class="n">RULE 4</span><b>Reels for reach, carousels for saves</b><span>Carousels get ~9× more saves than single images.</span></div>
+    <div class="rule"><span class="n">RULE 5</span><b>Your own footage only</b><span>Since Apr 2026, repost accounts lose reach.</span></div>
+    <div class="rule"><span class="n">RULE 6</span><b>Make it "sendable"</b><span>Instagram ranks on watch time, likes and DM shares.</span></div>
+    <div class="rule"><span class="n">RULE 7</span><b>Label your tool "(ours)"</b><span>Developers hate hidden ads.</span></div>
+    <div class="rule"><span class="n">RULE 8</span><b>Paid creator? Add the ad label</b><span>Required in India (ASCI). Use licensed audio.</span></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Formats</span>
+  <h2>Formats developers love</h2>
+  <div class="grid">
+    <div class="card"><h3>One-person office skit</h3><p class="note">misodope · ~175–280K</p><p>Dev, manager, PM all played by one person. "That's so me."</p><div class="chips"><span class="chip">ZeroAI: pings pile up → calm focus block</span></div></div>
+    <div class="card"><h3>Deadpan talking head</h3><p class="note">Ben Awad · 800K+ TikTok (2022)</p><p>Straight face, green screen behind. Cheapest to make.</p><div class="chips"><span class="chip">React to a "quick call?" screenshot</span></div></div>
+    <div class="card"><h3>Fast meme-cut explainer</h3><p class="note">Fireship style</p><p>Dense, quick, treats viewers as smart.</p><div class="chips"><span class="chip">"ZeroAI in 30 seconds" screen demo</span></div></div>
+    <div class="card"><h3>Real-life coding reels (India)</h3><p class="note">@developer_rahul_ · ~218–290K · ~$400/reel</p><p>Boring dev problems made fun.</p><div class="chips"><span class="chip">Paid collab with ad label</span></div></div>
+    <div class="card"><h3>Satire interview</h3><p class="note">"Interview with a Senior JS Developer"</p><p>Exaggerates a pain everyone knows.</p><div class="chips"><span class="chip">"Interview with a dev who has 0 meetings"</span></div></div>
+    <div class="card"><h3>Brand skits, same face</h3><p class="note">tl;dv · 10K+ followers/month after 6 months</p><p>1–2 recurring characters. Closest model for ZeroAI.</p><div class="chips"><span class="chip">Build one "ZeroAI dev" character</span></div></div>
+  </div>
+  <p class="note">Avoid glamorous "day in the life" videos. They got backlash after the 2023 layoffs.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Your 4 angles</span>
+  <h2>Verdict: keep #1, fix #2, rebuild #3 and #4</h2>
+  <div class="angles">
+
+    <div class="angle">
+      <div class="left">
+        <div class="title"><h3>1. Morning chaos POV</h3><span class="pill keep">KEEP + POLISH</span></div>
+        <p class="fixline"><b>Fix:</b> real Slack/Jira sounds and UI. "Bhai Postman collection bhej de." Add a counter: "Interruption #7 · 11:42". Google an error, not "how to make coding less painful". Chai friend stays friendly. Last 2–3 sec: asks become tasks, focus block booked.</p>
+        <p class="risk">Risk: overacting looks cringe. Don't show ZeroAI finding the Postman file (not confirmed).</p>
+      </div>
+      <div class="meter">
+        <div class="mrow"><small><span>As planned</span><span>8/10</span></small><div class="mtrack"><div class="mfill before" style="width:80%"></div></div></div>
+        <div class="mrow"><small><span>With fixes</span><span>9/10</span></small><div class="mtrack"><div class="mfill after" style="width:90%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="angle">
+      <div class="left">
+        <div class="title"><h3>2. "3 tools senior engineers use"</h3><span class="pill fix">FIX</span></div>
+        <p class="newline">New: "3 boring tools that gave me back focus (#3 is ours)"</p>
+        <p class="fixline"><b>Fix:</b> make it a carousel. Drop "senior engineers" unless a real named senior says it. Show each tool doing one concrete thing.</p>
+        <p class="risk">Risk: "this is an ad" comments. Tool lists all look the same.</p>
+      </div>
+      <div class="meter">
+        <div class="mrow"><small><span>As planned</span><span>5/10</span></small><div class="mtrack"><div class="mfill before" style="width:50%"></div></div></div>
+        <div class="mrow"><small><span>With fixes</span><span>7/10</span></small><div class="mtrack"><div class="mfill after" style="width:70%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="angle">
+      <div class="left">
+        <div class="title"><h3>3. "He gets the hike, you drown in calls"</h3><span class="pill rebuild">REBUILD</span></div>
+        <p class="newline">New: "Same dev. Two Tuesdays." It's not you. It's your calendar.</p>
+        <p class="fixline"><b>Fix:</b> split screen. Left: 6 calls, 40 pings. Right: two 2-hour focus blocks. Reward is "logged off at 6:30", not a hike.</p>
+        <p class="risk">Risk: shaming the viewer. The "10x engineer" post (2019) and the 70/90-hour-week comments got huge backlash in India.</p>
+      </div>
+      <div class="meter">
+        <div class="mrow"><small><span>As planned</span><span>3/10</span></small><div class="mtrack"><div class="mfill before" style="width:30%"></div></div></div>
+        <div class="mrow"><small><span>Rebuilt</span><span>7/10</span></small><div class="mtrack"><div class="mfill after" style="width:70%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="angle">
+      <div class="left">
+        <div class="title"><h3>4. Starter Story founder clip</h3><span class="pill rebuild">REBUILD</span></div>
+        <p class="newline">New: a real Indian indie founder films their own "2 quiet hours" routine (collab post)</p>
+        <p class="fixline"><b>Fix:</b> never use Starter Story footage. Use a collab or your own b-roll with voiceover. Talk about the process, not the money. Keep the line "buy quiet time".</p>
+        <p class="risk">Risk: copyright (HubSpot owns Starter Story since Feb 2026). Instagram cuts reach for reposts. Don't invent founder quotes.</p>
+      </div>
+      <div class="meter">
+        <div class="mrow"><small><span>With their clips</span><span>2/10</span></small><div class="mtrack"><div class="mfill before" style="width:20%"></div></div></div>
+        <div class="mrow"><small><span>Own footage</span><span>7/10</span></small><div class="mtrack"><div class="mfill after" style="width:70%"></div></div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">10 new angles</span>
+  <h2>More ideas developers will share</h2>
+  <div class="grid">
+    <div class="hookcard"><h3>"Quick call?"</h3><p class="q">"The two most expensive words in tech."</p><div class="chips"><span class="chip">Talking head</span><span class="chip stat">"A single meeting can blow a whole afternoon" (Paul Graham)</span></div></div>
+    <div class="hookcard"><h3>Interruption counter</h3><p class="q">"I counted every ping today."</p><div class="chips"><span class="chip">Reel + live counter</span><span class="chip stat">Most-pinged: ~275/day</span></div></div>
+    <div class="hookcard"><h3>Where did your week go?</h3><p class="q">"Your calendar, audited."</p><div class="chips"><span class="chip">Carousel + ZeroAI scan</span><span class="chip stat">Uses the real 2-week scan</span></div></div>
+    <div class="hookcard"><h3>AI paradox</h3><p class="q">"AI made you code faster. Slack ate it back."</p><div class="chips"><span class="chip">Talking head</span><span class="chip stat">68% save 10+ hrs, 50% lose 10+ hrs</span></div></div>
+    <div class="hookcard"><h3>US client call</h3><p class="q">"9:30 pm IST. 'Just a quick sync.'"</p><div class="chips"><span class="chip">Skit</span><span class="chip stat">Indian dev life</span></div></div>
+    <div class="hookcard"><h3>Indian WFH</h3><p class="q">"Standup. Cooker whistle. Power cut."</p><div class="chips"><span class="chip">Skit</span><span class="chip stat">Bath study, 51 Indian IT workers</span></div></div>
+    <div class="hookcard"><h3>Anti-hustle</h3><p class="q">"70-hour week? I need 2 quiet hours."</p><div class="chips"><span class="chip">Talking head</span><span class="chip stat">27% say no deep-work time</span></div></div>
+    <div class="hookcard"><h3>Could've been a message</h3><p class="q">"This standup could have been a Slack thread."</p><div class="chips"><span class="chip">Meme / skit</span><span class="chip stat">57% of meetings unplanned</span></div></div>
+    <div class="hookcard"><h3>Send to your manager</h3><p class="q">"Your lead probably doesn't know this."</p><div class="chips"><span class="chip">Carousel</span><span class="chip stat">Under half think leaders see it</span></div></div>
+    <div class="hookcard"><h3>Deep work in 10 sec</h3><p class="q">"Deep work, explained before your next ping."</p><div class="chips"><span class="chip">Carousel</span><span class="chip stat">Cal Newport's definition</span></div></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Numbers for the screen</span>
+  <h2>Stats you can use (and ones to avoid)</h2>
+  <p class="short">Put a small source + year on every stat card. Developers will ask "source?"</p>
+  <div class="split">
+    <div class="stats">
+      <div class="stat ok"><span class="ic">✓</span><p><q>Half of developers lose 10+ hours a week to non-coding work.</q><small>Atlassian DevEx 2025</small></p></div>
+      <div class="stat ok"><span class="ic">✓</span><p><q>9 in 10 devs lose 6+ hours a week.</q><small>Atlassian DevEx 2025</small></p></div>
+      <div class="stat ok"><span class="ic">✓</span><p><q>About 6 in 10 devs spend 30+ min a day searching for answers.</q><small>Stack Overflow 2024</small></p></div>
+      <div class="stat ok"><span class="ic">✓</span><p><q>The most-pinged workers are interrupted about every 2 minutes.</q><small>Microsoft Work Trend Index 2025</small></p></div>
+      <div class="stat ok"><span class="ic">✓</span><p><q>It took ~23 minutes to get back to an interrupted task.</q><small>Gloria Mark (via Gallup)</small></p></div>
+      <div class="stat ok"><span class="ic">✓</span><p><q>66% of devs spend more time fixing "almost right" AI code.</q><small>Stack Overflow 2025</small></p></div>
+    </div>
+    <div class="stats">
+      <div class="stat no"><span class="ic">✕</span><p><q>23 minutes to refocus.</q><small>Wrong meaning. Say "get back to the task".</small></p></div>
+      <div class="stat no"><span class="ic">✕</span><p><q>Everyone is interrupted every 2 minutes.</q><small>Only true for the most-pinged 20%.</small></p></div>
+      <div class="stat no"><span class="ic">✕</span><p><q>Devs code 52 minutes before an interruption.</q><small>No real study behind it.</small></p></div>
+      <div class="stat no"><span class="ic">✕</span><p><q>87 interruptions a day / 23 context switches a day.</q><small>Vendor blog numbers.</small></p></div>
+      <div class="stat no"><span class="ic">✕</span><p><q>Trusted by 7,000+ devs.</q><small>Only if the Chrome store shows that on the day you post.</small></p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Hooks</span>
+  <h2>Opening lines to test</h2>
+  <div class="phones">
+    <div class="phone"><span>HOOK</span><p>POV: you opened VS Code at 10. It's 1 pm. You've written 4 lines.</p></div>
+    <div class="phone"><span>HOOK</span><p>It's not you. It's your calendar.</p></div>
+    <div class="phone"><span>HOOK</span><p>Same dev. Two Tuesdays.</p></div>
+    <div class="phone"><span>HOOK</span><p>I counted every interruption today. Guess.</p></div>
+    <div class="phone"><span>HOOK</span><p>AI made you faster. Meetings made you slower.</p></div>
+    <div class="phone"><span>HOOK</span><p>What the manager says vs what the developer hears.</p></div>
+    <div class="phone"><span>HOOK</span><p>Send this to the person who books 9 am calls.</p></div>
+    <div class="phone"><span>HOOK</span><p>If standups were a Bollywood movie.</p></div>
+    <div class="phone"><span>HOOK</span><p>70-hour week? I'd settle for 2 quiet hours.</p></div>
+    <div class="phone"><span>HOOK</span><p>Interview with a developer who has zero meetings.</p></div>
+  </div>
+  <p class="note">These are untested. Post as Trial Reels first (shown to non-followers) and keep the winners.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Production order</span>
+  <h2>Make these 6 first, in this order</h2>
+  <div class="order">
+    <div class="ostep"><span class="num">1</span><div><b>Morning chaos POV</b> (fixed)<small>Best angle. Tests the brand voice.</small></div><span class="chip">Reel 30–45s</span></div>
+    <div class="ostep"><span class="num">2</span><div><b>"Where did your week go?"</b><small>Shows ZeroAI's real 2-week scan. Earns saves.</small></div><span class="chip">Carousel 7–10</span></div>
+    <div class="ostep"><span class="num">3</span><div><b>"Quick call?" deadpan</b><small>Cheapest to make. Built to be sent to teammates.</small></div><span class="chip">Reel 20–30s</span></div>
+    <div class="ostep"><span class="num">4</span><div><b>"Same dev. Two Tuesdays."</b><small>Safe version of the comparison angle.</small></div><span class="chip">Split-screen reel</span></div>
+    <div class="ostep"><span class="num">5</span><div><b>"3 boring tools (#3 ours)"</b><small>Safe version of the tools angle.</small></div><span class="chip">Carousel</span></div>
+    <div class="ostep"><span class="num">6</span><div><b>Indie founder "2 quiet hours"</b><small>Safe version of the Starter Story idea. Needs outreach time.</small></div><span class="chip">Collab reel</span></div>
+  </div>
+  <p class="short">Big idea for every piece: <b>"It's not you. It's your calendar."</b> Make the calendar the villain, never the viewer.</p>
+</section>
+
+<footer class="footer">
+  <p>Research could not open live pages, so numbers come from search summaries. Check each stat against its source before it goes on screen. Follower counts are approximate.</p>
+  <p>Full report with all source links: <span style="font-family:var(--mono)">reports/Developer Instagram content that works.md</span></p>
+</footer>
+</main>
