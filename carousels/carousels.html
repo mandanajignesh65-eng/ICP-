@@ -1,0 +1,226 @@
+<title>Zero Founder Carousels</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Azeret+Mono:wght@500;700&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout: page = stack of carousels; each carousel = horizontal strip of 4:5 slides (Instagram 1080x1350, drawn at 432x540 and scaled for export) */
+:root{
+  --ink:#100a21; --ink2:#181429; --plum:#1f163d; --violet:#6b4ce8; --violet2:#8061ff; --lilac:#a790ff; --mist:#d4d0f1;
+  --paper:#f5f2ea; --sun:#ffd270; --coral:#f88460; --sky:#9ec8ff;
+  --page-bg:#ece9f5; --page-fg:#1b1532; --page-muted:#5e5878;
+  --display:"Instrument Sans",system-ui,sans-serif; --mono:"Azeret Mono",ui-monospace,monospace; --hand:"Caveat","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page-bg:#0b0718;--page-fg:#ece9f5;--page-muted:#a39cc0;color-scheme:dark}}
+:root[data-theme="dark"]{--page-bg:#0b0718;--page-fg:#ece9f5;--page-muted:#a39cc0;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--page-bg);color:var(--page-fg);font-family:var(--display);margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+header h1{font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--page-muted);max-width:70ch}
+.set{display:grid;gap:12px}
+.set h2{margin:0;font-size:1.25rem}
+.set .meta{color:var(--page-muted);font-size:.9rem}
+.strip{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory}
+/* ---------- slide ---------- */
+.slide{flex:0 0 auto;width:432px;height:540px;max-width:100%;position:relative;overflow:hidden;border-radius:6px;scroll-snap-align:start;
+  background:var(--ink);color:var(--paper);font-family:var(--display);
+  background-image:radial-gradient(rgba(167,144,255,.16) 1px,transparent 1.3px);background-size:18px 18px}
+.slide.cta{background:linear-gradient(160deg,#311b67 0%,#5629c1 55%,#6b4ce8 100%)}
+.slide .top{position:absolute;top:18px;left:22px;right:22px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--lilac);letter-spacing:.04em}
+.slide .bot{position:absolute;bottom:16px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;color:rgba(212,208,241,.7)}
+.logo{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:13px;color:var(--paper)}
+.logo i{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--lilac),var(--violet));display:block}
+.body{position:absolute;top:48px;left:22px;right:22px;bottom:44px;display:flex;flex-direction:column}
+.h-xl{font-size:44px;line-height:1.02;font-weight:700;letter-spacing:-.02em;margin:0}
+.h-l{font-size:28px;line-height:1.08;font-weight:700;letter-spacing:-.015em;margin:0}
+.p{font-size:15px;line-height:1.4;color:var(--mist);margin:0}
+.mark{background:linear-gradient(transparent 58%,rgba(255,210,112,.55) 58%,rgba(255,210,112,.55) 92%,transparent 92%);padding:0 2px}
+.sun{color:var(--sun)} .lil{color:var(--lilac)}
+.hand{font-family:var(--hand);font-size:22px;color:var(--sun);line-height:1}
+.card{background:var(--ink2);border:1.5px solid rgba(167,144,255,.35);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.7}
+.card .k{color:var(--lilac)} .card .s{color:var(--sun)} .card .c{color:rgba(212,208,241,.5)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:7px;border:1.5px solid var(--lilac);color:var(--paper);background:rgba(107,76,232,.18)}
+.chip.y{border-color:var(--sun);background:rgba(255,210,112,.12)}
+.big{font-size:72px;font-weight:700;letter-spacing:-.04em;line-height:.9;color:var(--sun)}
+.quote{font-size:21px;line-height:1.3;font-weight:600;margin:0}
+.qmark{font-size:90px;line-height:.6;color:var(--violet2);font-family:Georgia,serif;height:40px}
+.src{font-family:var(--mono);font-size:10px;color:var(--lilac)}
+.av{position:absolute}
+.arrow{position:absolute}
+.cal{background:#fbfaff;color:#1b1532;border-radius:12px;padding:12px;font-family:var(--display);font-size:12px;box-shadow:0 12px 30px rgba(16,10,33,.35)}
+.cal .row{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center;min-height:30px;border-top:1px dashed #e1ddf0}
+.cal .row:first-child{border-top:0}
+.cal .t{font-family:var(--mono);font-size:10px;color:#7d769a}
+.cal .ev{border-radius:7px;padding:6px 8px;font-weight:600}
+.ev.deep{background:#6b4ce8;color:#fff}
+.ev.slack{background:#fdecd3;color:#7a4b00}
+.ev.rev{background:#e7e4f0;color:#311b67}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--sun);color:var(--ink);font-weight:700;border-radius:999px;padding:10px 16px;font-size:14px}
+.disc{font-family:var(--mono);font-size:8.5px;line-height:1.4;color:rgba(236,233,245,.75)}
+.dl{display:flex;gap:10px;flex-wrap:wrap;font-size:.85rem;color:var(--page-muted)}
+@media (max-width:480px){.slide{transform-origin:top left}}
+</style>
+
+<main class="wrap">
+<header>
+  <h1>Founder carousels for Zero</h1>
+  <p>Six carousels, 7 slides each, in Zero's colours. Doodle avatars are drawn illustrations, not real photos. Swipe each row sideways. The last slide of every carousel is the separate Zero slide with the "not affiliated" line.</p>
+</header>
+<div id="sets"></div>
+</main>
+
+<script>
+const FOUNDERS=[
+ {id:"marc",name:"Marc Lou",tag:"indie hacker",from:"France / Bali",product:"ShipFast + 35 other startups",team:"solo",rev:"$77K",per:"/month",date:"Starter Story, Apr 2026",
+  hook:["Shipped","35 startups.","Solo."],hookSub:"His secret isn't code. It's his mornings.",
+  timeline:[["35","startups shipped"],["$77K","per month (Apr 2026)"],["1","person team"]],
+  stack:["Next.js","ShipFast","1 code editor","AI chat on the right"],stackNote:"one thing at a time, single-threaded",
+  quote:"The deep work is basically a moment of time that I protect because that's what got me here.",
+  habit:"Phone off. No email. Fully offline for the first 4–6 hours of the day.",
+  lesson:["Your best hours","are the first ones.","Don't give them to Slack."],
+  av:{skin:"#f1c7a5",hair:"cap",shirt:"#8061ff",glasses:false},src:"starterstory.com/marclou"},
+ {id:"fernando",name:"Fernando Pessagno",tag:"designer who codes",from:"Spain",product:"AI Carousels + ResumeMaker.Online",team:"solo",rev:"$15K",per:"/month",date:"Starter Story, Dec 2024",
+  hook:["4 hours a day.","$15K a month.","Empty calendar."],hookSub:"No stand-ups. No meetings. Just mornings.",
+  timeline:[["Fired","the day before his vacation"],["2","AI apps, built solo"],["$15K","per month (Dec 2024)"]],
+  stack:["Notion","Outseta","AI APIs","lean, ~$1K/mo costs"],stackNote:"boring tools, high margin",
+  quote:"I decided to stick with these four hours of deep [work] each morning. Having this constraint kind of forces you to be intentional about your to do list.",
+  habit:"4 hours of deep work every morning. That's the whole workday.",
+  lesson:["Fewer hours","= a shorter to-do list","= real priorities."],
+  av:{skin:"#e8b48f",hair:"curly",shirt:"#ffd270",glasses:true},src:"starterstory.com/stories/i-make-15k-month-with-2-ai-apps"},
+ {id:"ben",name:"Ben Bozzay",tag:"software dev",from:"USA",product:"Tech Lockdown (site & app blocker)",team:"solo",rev:"$15K",per:"MRR",date:"Starter Story, Jul 2025",
+  hook:["Coded at 5:30am","before his 9–5.","Now it is his 9–5."],hookSub:"Laid off. Picked his side project over a job offer.",
+  timeline:[["5:30am","daily dev block"],["1,300","customers"],["$15K","MRR (Jul 2025)"]],
+  stack:["SvelteKit","Supabase","Vercel","Mailgun","Plausible"],stackNote:"email = his most important tool",
+  quote:"prioritizing development tasks and stuff that just required more focus and attention in the morning. So I would do that between 5:30 and 8 o'clock",
+  habit:"Hard dev work 5:30–8:30am, brain fresh. Marketing in the evening.",
+  lesson:["Deep work first.","Shallow work later.","Match the task to your energy."],
+  av:{skin:"#f3cfb3",hair:"short",shirt:"#9ec8ff",glasses:false,beard:true},src:"starterstory.com/stories/my-side-project-makes-15k-month-quit-my-9-5"},
+ {id:"jack",name:"Jack Friks",tag:"self-taught dev",from:"Canada",product:"PostBridge + Curiosity Quench",team:"solo",rev:"$10K",per:"/month",date:"Starter Story, Mar 2025",
+  hook:["One timer.","One task.","$10K a month."],hookSub:"Taught himself to code. Built it from his mom's basement.",
+  timeline:[["1 yr","to learn to code"],["2","apps"],["$10K","per month (Mar 2025)"]],
+  stack:["Next.js","React Native + Expo","Supabase","ShipFast"],stackNote:"plus a work timer",
+  quote:"Every day I just start a timer and I lock in. I focus on the task, one task that I'm doing.",
+  habit:"Start a timer. One task. 60–120 minutes. Stop at dinner.",
+  lesson:["Multitasking feels fast.","It isn't.","One task, one block, ship."],
+  av:{skin:"#f6d7c0",hair:"messy",shirt:"#f88460",glasses:false,hoodie:true},src:"starterstory.com/stories/i-built-a-10k-month-app-from-my-mom-s-basement"},
+ {id:"louis",name:"Louis Pereira",tag:"part-time builder",from:"India 🇮🇳",product:"AudioPen (voice → clean text)",team:"solo, part-time",rev:"$15K",per:"/month",date:"Starter Story, Dec 2025",
+  hook:["Built in 12 hours.","Part-time.","$15K a month."],hookSub:"He still works in his family business.",
+  timeline:[["12 hrs","to build v1"],["5,000+","paying users"],["$15K","per month (Dec 2025)"]],
+  stack:["Bubble","Xano","Draftbit","Loops","Plausible"],stackNote:"no-code, and it works",
+  quote:"AudioPen focuses on doing one thing very well… I've consciously stuck to doing the simple stuff well. I think that slow consistency is what has worked for me.",
+  habit:"Says no to shiny ideas. Does one thing well. Every day, slowly.",
+  lesson:["Focus isn't only hours.","It's saying no","to the next feature."],
+  av:{skin:"#c98d63",hair:"side",shirt:"#a790ff",glasses:true},src:"starterstory.com/Louis"},
+ {id:"vikash",name:"Vikash",tag:"designer turned dev",from:"India 🇮🇳",product:"BulkMockup (Photoshop plugin)",team:"tiny team",rev:"$12K",per:"/month",date:"Starter Story, Feb 2026",
+  hook:["Locked in a room","for 2 months.","Now $12K a month."],hookSub:"But there's a part of the story nobody tells.",
+  timeline:[["2 mo","of pure focus for v1"],["1 hr → 2 min","per mockup"],["$12K","per month (Feb 2026)"]],
+  stack:["JavaScript","Photoshop plugin","Gumroad","Notion","Cal.com"],stackNote:"learned JS to automate his own work",
+  quote:"do not ignore your health. I had been grinding 14 16 hours a day",
+  habit:"2 months of focus built it. 14–16 hour days ended in spine surgery.",
+  lesson:["Deep work, yes.","Grinding, no.","Protect the block and your body."],
+  av:{skin:"#b97e57",hair:"short",shirt:"#ffd270",glasses:false,beard:true},src:"starterstory.com/vikash"}
+];
+
+/* ---------- doodle avatar (generic illustration, not a likeness) ---------- */
+function avatar(a,size=170,id="x"){
+  const st="#f5f2ea", sw=3.2;
+  const hair={
+    cap:`<path d="M52 70 Q100 30 150 70 L150 78 L52 78 Z" fill="#6b4ce8" stroke="${st}" stroke-width="${sw}"/><path d="M140 76 L178 82" stroke="${st}" stroke-width="${sw}" stroke-linecap="round"/>`,
+    curly:`<path d="M54 82 Q48 50 74 46 Q80 30 100 38 Q118 26 132 44 Q156 46 150 82 Q140 64 120 62 Q100 70 80 62 Q62 64 54 82Z" fill="#2a1d14" stroke="${st}" stroke-width="${sw}"/>`,
+    short:`<path d="M54 80 Q52 44 100 42 Q148 44 148 80 Q130 60 100 60 Q70 60 54 80Z" fill="#2a1d14" stroke="${st}" stroke-width="${sw}"/>`,
+    messy:`<path d="M52 82 L58 50 L70 58 L76 38 L92 52 L100 32 L112 50 L126 36 L132 56 L148 48 L150 82 Q126 62 100 64 Q74 62 52 82Z" fill="#3b2a1a" stroke="${st}" stroke-width="${sw}"/>`,
+    side:`<path d="M54 84 Q50 46 96 42 Q150 40 150 78 Q120 54 84 66 Q66 70 54 84Z" fill="#1d1410" stroke="${st}" stroke-width="${sw}"/>`
+  }[a.hair];
+  const glasses=a.glasses?`<g fill="none" stroke="${st}" stroke-width="2.6"><circle cx="84" cy="96" r="11"/><circle cx="118" cy="96" r="11"/><path d="M95 96 L107 96"/></g>`:"";
+  const beard=a.beard?`<path d="M66 108 Q70 140 101 142 Q132 140 136 108 Q120 126 101 126 Q82 126 66 108Z" fill="#2a1d14" stroke="${st}" stroke-width="2.4"/>`:"";
+  const body=a.hoodie
+    ?`<path d="M38 210 Q40 160 76 150 L126 150 Q162 160 164 210Z" fill="${a.shirt}" stroke="${st}" stroke-width="${sw}"/><path d="M84 152 L92 176 M118 152 L110 176" stroke="${st}" stroke-width="2.4"/>`
+    :`<path d="M40 210 Q42 162 80 152 L122 152 Q160 162 162 210Z" fill="${a.shirt}" stroke="${st}" stroke-width="${sw}"/><path d="M86 152 Q101 166 116 152" fill="none" stroke="${st}" stroke-width="2.4"/>`;
+  return `<svg width="${size}" height="${size*210/200}" viewBox="0 0 200 210" aria-hidden="true">
+  <defs><filter id="rough${id}"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="${id.length*7}"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter></defs>
+  <g filter="url(#rough${id})" stroke-linejoin="round" stroke-linecap="round">
+   ${body}
+   <path d="M88 132 L88 152 L114 152 L114 132" fill="${a.skin}" stroke="${st}" stroke-width="${sw}"/>
+   <ellipse cx="101" cy="98" rx="48" ry="46" fill="${a.skin}" stroke="${st}" stroke-width="${sw}"/>
+   ${beard}
+   ${hair}
+   <circle cx="84" cy="97" r="3.4" fill="#100a21"/><circle cx="118" cy="97" r="3.4" fill="#100a21"/>
+   ${glasses}
+   <path d="M90 118 Q101 126 112 118" fill="none" stroke="#100a21" stroke-width="2.6"/>
+   <path d="M60 88 Q56 100 62 106" fill="none" stroke="${st}" stroke-width="2"/>
+  </g></svg>`;
+}
+const doodleArrow=(d,w=90,h=60)=>`<svg width="${w}" height="${h}" viewBox="0 0 90 60" aria-hidden="true"><path d="${d}" fill="none" stroke="#ffd270" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+const ARR_DOWN="M10 6 Q60 4 66 44 M56 36 L66 46 L74 34";
+const ARR_LEFT="M80 10 Q40 6 18 40 M14 26 L16 42 L30 40";
+
+function frame(f,i,inner,cls=""){
+  return `<section class="slide ${cls}" data-set="${f.id}" data-i="${i}">
+   <div class="top"><span>${cls==="cta"?"// for devs who love to ship":"// "+f.id+".story"}</span><span>${i}/7</span></div>
+   <div class="body">${inner}</div>
+   <div class="bot"><span class="logo"><i></i>Zero</span><span>${i<7?(i===1?"swipe →":"source: "+f.date):""}</span></div>
+  </section>`;
+}
+function slides(f){
+  const out=[];
+  out.push(frame(f,1,`
+    <p class="hand" style="margin-bottom:10px">a real story ↓</p>
+    <h2 class="h-xl">${f.hook[0]}<br><span class="sun">${f.hook[1]}</span><br>${f.hook[2]}</h2>
+    <p class="p" style="margin-top:14px;max-width:24ch">${f.hookSub}</p>
+    <div class="av" style="right:-8px;bottom:-6px">${avatar(f.av,190,f.id+"a")}</div>
+    <div class="arrow" style="right:150px;bottom:150px">${doodleArrow(ARR_DOWN)}</div>`));
+  out.push(frame(f,2,`
+    <p class="hand">meet the founder</p>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-top:6px">
+      <div>${avatar(f.av,120,f.id+"b")}</div>
+      <p class="hand" style="font-size:18px;color:var(--mist);transform:rotate(-4deg)">(doodle, not a photo)</p>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <span class="c">// founder.json</span><br>
+      { <span class="k">"name"</span>: <span class="s">"${f.name}"</span>,<br>
+      &nbsp;&nbsp;<span class="k">"is"</span>: <span class="s">"${f.tag}"</span>,<br>
+      &nbsp;&nbsp;<span class="k">"from"</span>: <span class="s">"${f.from}"</span>,<br>
+      &nbsp;&nbsp;<span class="k">"built"</span>: <span class="s">"${f.product}"</span>,<br>
+      &nbsp;&nbsp;<span class="k">"team"</span>: <span class="s">"${f.team}"</span> }
+    </div>`));
+  out.push(frame(f,3,`
+    <p class="hand">the numbers</p>
+    <div class="big" style="margin-top:8px">${f.rev}<span style="font-size:24px;color:var(--lilac);letter-spacing:0"> ${f.per}</span></div>
+    <div style="display:grid;gap:10px;margin-top:26px">
+      ${f.timeline.map((t,k)=>`<div style="display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start">
+        <span style="width:14px;height:14px;border-radius:50%;border:2.5px solid var(--sun);margin-top:6px;${k===2?"background:var(--sun)":""}"></span>
+        <div><b style="font-size:22px">${t[0]}</b><div class="p" style="font-size:13px">${t[1]}</div></div></div>`).join("")}
+    </div>`));
+  out.push(frame(f,4,`
+    <p class="hand">the tech stack</p>
+    <h2 class="h-l" style="margin-top:6px">Nothing fancy.<br><span class="lil">That's the point.</span></h2>
+    <div class="card" style="margin-top:18px"><span class="c">$</span> cat stack.txt</div>
+    <div class="chips" style="margin-top:12px">${f.stack.map((s,k)=>`<span class="chip ${k%2?"y":""}">${s}</span>`).join("")}</div>
+    <p class="hand" style="margin-top:auto;font-size:20px">↳ ${f.stackNote}</p>`));
+  out.push(frame(f,5,`
+    <p class="hand">the habit that matters</p>
+    <div class="qmark" style="margin-top:14px">“</div>
+    <p class="quote">${f.quote}</p>
+    <p class="src" style="margin-top:12px">— ${f.name}, ${f.date}</p>
+    <div class="card" style="margin-top:auto;font-family:var(--display);font-size:14px;line-height:1.4"><span class="sun" style="font-family:var(--mono);font-size:11px">in short:</span><br>${f.habit}</div>`));
+  out.push(frame(f,6,`
+    <p class="hand">the lesson</p>
+    <h2 class="h-xl" style="margin-top:10px;font-size:34px">${f.lesson[0]}<br><span class="mark" style="color:var(--paper)">${f.lesson[1]}</span><br><span class="lil">${f.lesson[2]}</span></h2>
+    <p class="p" style="margin-top:auto">Most devs don't lose to bad code.<br>They lose their best hours to pings.</p>`));
+  out.push(frame(f,7,`
+    <p class="hand" style="color:var(--sun)">want your own deep work block?</p>
+    <h2 class="h-l" style="margin-top:6px">Zero finds your focus time<br>and protects it.</h2>
+    <div class="cal" style="margin-top:14px">
+      <div class="row"><span class="t">9:30</span><span class="ev slack">"I'll review the PR today" → tracked</span></div>
+      <div class="row"><span class="t">10–11:30</span><span class="ev deep">Deep work · protected</span></div>
+      <div class="row"><span class="t">5:00</span><span class="ev rev">Review what got shipped</span></div>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="btn">Try Zero free →</span><span class="p" style="font-size:12px">Chrome extension · works with Slack & Calendar</span></div>
+    <p class="disc" style="margin-top:auto">Zero is not affiliated with ${f.name} or Starter Story. No endorsement implied. Story facts from a public Starter Story interview (${f.src}), retold in our words.</p>`,"cta"));
+  return out.join("");
+}
+document.getElementById("sets").innerHTML=FOUNDERS.map((f,n)=>`
+  <div class="set"><h2>${n+1}. ${f.name}: ${f.hook.join(" ")}</h2><div class="meta">${f.product} · ${f.rev}${f.per} · ${f.date}</div>
+  <div class="strip">${slides(f)}</div></div>`).join("");
+</script>
