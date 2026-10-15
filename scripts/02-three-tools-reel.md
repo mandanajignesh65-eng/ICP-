@@ -1,9 +1,10 @@
-# Script 2 — "3 tools I use every day" (Reel)
+# Script 2 — "Tools almost every senior dev uses" (Reel)
 
+**Target viewer:** senior developers (5+ years, tech leads). They already know fzf, tmux and the rest. Their real problem isn't coding speed. It's that everyone pings them: juniors, reviews, design calls, "quick sync".
 **Format:** Instagram Reel, 9:16, ~40 seconds
-**Style:** One developer talking to the phone camera, like telling a friend. Real screen recordings for each tool. No music, or very low lofi. Jump cuts + captions.
-**Tone rule:** Sound like a dev sharing tips, not a brand selling. No "game-changer", no "10x", no "revolutionary".
-**Thread that ties the 3 tools together:** each one removes one small daily interruption.
+**Style:** One experienced dev talking to the phone camera. Calm, dry, a bit tired-funny. Like a tech lead talking to another tech lead. Real screen recordings. No music, or very low lofi.
+**Tone rule:** No hype words. No "game-changer", "10x", "boost productivity". Seniors scroll past anything that sounds like marketing.
+**Thread:** all 3 tools help a senior get interrupted less.
 
 ---
 
@@ -11,48 +12,48 @@
 
 | Time | Camera / screen | What you say | Text on screen |
 |---|---|---|---|
-| 0–3s | Face to camera, laptop open | "Three tools I wish a senior had shown me in my first year." | **3 tools I use every single day** |
-| 3–13s | Screen: terminal → press Ctrl+R → type `dock` → the long docker command appears | "One. fzf. You press Ctrl+R in the terminal and search every command you've ever typed. That long docker command from last week? Two seconds. No more googling it again." | **fzf → Ctrl+R = find any old command** |
-| 13–24s | Screen: Bruno app, then VS Code showing a `bruno/` folder inside the repo | "Two. Bruno. It's like Postman, but your API collections live inside your Git repo. So next time someone asks 'bhai, Postman collection bhej de'… it's already there. Just git pull." | **Bruno → API collections inside your repo** |
-| 24–38s | Face to camera, then screen: a Slack message "can you check this when free?" → it shows up as a task → Google Calendar shows "Deep Work 2–4 pm" | "Three. And full disclosure, this one's ours. ZeroAI. It's a Chrome extension. When someone drops a 'can you check this when free?' on Slack, it turns that into a task, and it blocks time on your calendar so you can actually code." | **ZeroAI → Slack asks become tasks + focus time booked** <br> *(ours)* |
-| 38–42s | Face to camera, small smile | "First two are open source. All three are free. Save this for Monday." | **Save for Monday 📌** |
+| 0–3s | Face to camera, laptop open, a bit tired | "Almost every senior dev I know uses these. Not for coding. For surviving everything around the coding." | **Tools almost every senior dev uses** |
+| 3–14s | Screen: Loom recording a code walkthrough → Slack reply with the Loom link | "One. Loom. A junior asks how the auth flow works. You can explain it on a call. Then again next week. Or record it once, five minutes, and paste the link every time someone asks." | **Loom → explain once, not 5 times** |
+| 14–25s | Screen: quick boxes-and-arrows sketch in Excalidraw → link pasted in a PR description | "Two. Excalidraw. Before a design discussion turns into a one-hour call, draw the boxes and arrows and drop the link in the PR. Half the questions answer themselves." | **Excalidraw → draw it, skip the call** |
+| 25–38s | Face to camera, then screen: Slack "can you take a look when free?" → task appears → Google Calendar "Deep Work 2–4 pm" | "Three. Full disclosure, this one's ours. ZeroAI. Every 'can you take a look when free?' from Slack or Jira becomes a task, and it blocks focus time on your calendar. Reviews still happen. Just not in the middle of your actual work." | **ZeroAI → asks become tasks + focus time booked** <br> *(ours)* |
+| 38–42s | Face to camera | "Being senior isn't about typing faster. It's about getting interrupted less." | **Send this to the senior who's always on calls** |
 
 ---
 
 ## Optional Hinglish version (same shots)
 
-- **Hook:** "Teen tools jo kaash first year mein kisi senior ne dikhaye hote."
-- **fzf:** "Pehla, fzf. Terminal mein Ctrl+R dabao, aur jo bhi command kabhi likhi thi, search kar lo. Last week wali lambi docker command? Do second. Dobara Google karne ki zarurat nahi."
-- **Bruno:** "Doosra, Bruno. Postman jaisa hi hai, par API collections tumhare Git repo ke andar rehti hain. Toh agli baar koi bole 'bhai, Postman collection bhej de'… already repo mein hai. Bas git pull."
-- **ZeroAI:** "Teesra, aur honestly bata doon, ye humara hai. ZeroAI. Chrome extension hai. Slack pe koi bole 'free ho toh dekh lena', ye usse task bana deta hai, aur calendar pe time block kar deta hai taaki tum sach mein code kar pao."
-- **End:** "Pehle do open source hain. Teeno free hain. Monday ke liye save kar lo."
+- **Hook:** "Jitne bhi senior devs ko main jaanta hoon, almost sab ye use karte hain. Coding ke liye nahi. Coding ke aas-paas ke chaos ko survive karne ke liye."
+- **Loom:** "Pehla, Loom. Junior poochta hai auth flow kaise kaam karta hai. Call pe samjha do, phir next week dobara. Ya ek baar paanch minute ka record karo, aur har baar bas link bhej do."
+- **Excalidraw:** "Doosra, Excalidraw. Design discussion ek ghante ki call bane, usse pehle boxes aur arrows bana do, link PR mein daal do. Aadhe sawaal wahin khatam."
+- **ZeroAI:** "Teesra, aur honestly bata doon, ye humara hai. ZeroAI. Slack ya Jira pe har 'free ho toh dekh lena' task ban jaata hai, aur calendar pe focus time block ho jaata hai. Reviews hote rahenge, bas tumhare actual kaam ke beech mein nahi."
+- **End:** "Senior hona fast typing ke baare mein nahi hai. Kam interrupt hone ke baare mein hai."
 
 ---
 
 ## Caption
 
-> 3 tools that killed my most annoying small interruptions 👇
+> Senior dev life: 20% code, 80% "quick question?" 🙃
 >
-> 1. fzf: Ctrl+R to search your whole command history
-> 2. Bruno: API collections that live in your Git repo
-> 3. ZeroAI (ours, being upfront 🙂): turns Slack asks into tasks and books focus time
+> 1. Loom: explain once, share the link forever
+> 2. Excalidraw: draw it before it becomes a meeting
+> 3. ZeroAI (ours, being upfront): Slack and Jira asks become tasks, focus time gets booked
 >
-> What's tool #4 for you? Drop it below.
+> Seniors, what's in your survival kit? 👇
 
-The question at the end gets developers to comment their own favourite tools. That brings comments and makes the post feel like a conversation, not an ad.
+The closing question gets seniors to comment their own tools, which brings comments and makes it a conversation.
 
 ---
 
 ## Filming notes
 
-- Shoot on a phone, natural light, at a real desk. Messy is fine.
-- One take per tool, then cut out the pauses. Don't over-rehearse.
-- Screen recordings must be real. Zoom in so text is readable on a phone.
-- Say "(ours)" out loud and keep it on screen. Developers trust it more when you are upfront.
+- The person on camera should look and sound experienced: calm, not over-excited. A real senior dev from the team is ideal.
+- Phone camera, real desk, natural light. One take per section, cut the pauses.
+- Screen recordings must be real and zoomed in so they're readable on a phone.
+- Say "(ours)" out loud and keep it on screen. Seniors respect honesty and hate hidden ads.
 
 ## Check before posting
 
-- [ ] fzf: Ctrl+R works only after fzf's shell key bindings are set up. Record it on a machine where it works.
-- [ ] Bruno: show a real repo with the collection folder committed.
-- [ ] ZeroAI: confirm with the client that it is free, and get a real recording of Slack ask → task → calendar block.
-- [ ] Don't show ZeroAI replying to anyone or finding files. That is not confirmed.
+- [ ] Loom has a free plan with limits; say "free plans" only if that is still true on posting day.
+- [ ] Excalidraw is free and open source.
+- [ ] Client confirms ZeroAI is free and works with both Slack and Jira; get a real recording of ask → task → calendar block.
+- [ ] Don't show ZeroAI replying to anyone or doing reviews. It schedules the work; it doesn't do it.
